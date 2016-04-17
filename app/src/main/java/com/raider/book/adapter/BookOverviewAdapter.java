@@ -3,6 +3,7 @@ package com.raider.book.adapter;
 import android.content.Context;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 public class BookOverviewAdapter extends RecyclerView.Adapter<BookOverviewAdapter.MyViewHolder> {
     Context context;
     ArrayList<BookData> books;
+    SparseIntArray sparseIntArray = new SparseIntArray();
 
     public BookOverviewAdapter(Context context, ArrayList<BookData> books) {
         this.context = context;
@@ -32,9 +34,21 @@ public class BookOverviewAdapter extends RecyclerView.Adapter<BookOverviewAdapte
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(MyViewHolder holder, final int position) {
         BookData bookData = books.get(position);
         holder.textView.setText(bookData.name);
+
+        holder.checkBox.setChecked(sparseIntArray.indexOfKey(position) >= 0);
+        holder.checkBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (((AppCompatCheckBox) v).isChecked()) {
+                    sparseIntArray.put(position, position);
+                } else {
+                    sparseIntArray.delete(position);
+                }
+            }
+        });
     }
 
     @Override
