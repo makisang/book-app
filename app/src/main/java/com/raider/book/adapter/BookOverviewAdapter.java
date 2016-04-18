@@ -15,7 +15,7 @@ import com.raider.book.model.entity.BookData;
 import java.util.ArrayList;
 
 /**
- * 在导书界面中显示所有的书籍信息
+ * 显示所有的.txt文件
  */
 public class BookOverviewAdapter extends RecyclerView.Adapter<BookOverviewAdapter.MyViewHolder> {
     Context context;
@@ -65,6 +65,11 @@ public class BookOverviewAdapter extends RecyclerView.Adapter<BookOverviewAdapte
             textView = (TextView) view.findViewById(R.id.my_tv);
             checkBox = (AppCompatCheckBox) view.findViewById(R.id.my_cb);
         }
+    }
+
+    // 返回选中的文件索引
+    public SparseIntArray getCheckedBooks() {
+        return sparseIntArray;
     }
 
 }

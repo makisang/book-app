@@ -1,6 +1,7 @@
 package com.raider.book.engine;
 
 import android.os.Environment;
+import android.util.Log;
 
 import com.raider.book.model.entity.BookData;
 import com.raider.book.utils.SDCardUtil;
@@ -25,6 +26,7 @@ public class TraverseBook {
         if (SDCardUtil.isSDCardAvail()) {
             books.clear();
             String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+            Log.v("test", "externalStorageDirectory is: " + path);
             File file = new File(path);
             findTXT(file);
         }
@@ -34,6 +36,7 @@ public class TraverseBook {
     private static void findTXT(File file) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
+            File.listRoots();
             if (files == null) {
                 return;
             }
