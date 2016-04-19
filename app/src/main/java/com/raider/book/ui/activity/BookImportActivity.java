@@ -3,9 +3,14 @@ package com.raider.book.ui.activity;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
+import android.app.ActivityOptions;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.ContentLoadingProgressBar;
@@ -14,6 +19,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,15 +36,23 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
     private static final String TAG = "test";
     private static final int MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 213;
 
+    private CoordinatorLayout coordinatorLayout;
     private RecyclerView recyclerView;
     private BookImportPresenter presenter;
     private ContentLoadingProgressBar progressBar;
     private BookOverviewAdapter adapter;
 
+    @SuppressWarnings("unchecked")
+    public static void start(Activity activity) {
+        Intent intent = new Intent(activity, BookImportActivity.class);
+        ActivityCompat.startActivity(activity, intent, ActivityOptions.makeSceneTransitionAnimation(activity).toBundle());
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_import);
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.my_coordinator);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
@@ -84,17 +98,25 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
 
     private void initViews() {
         progressBar = (ContentLoadingProgressBar) findViewById(R.id.my_progress);
-        progressBar.show();
         recyclerView = (RecyclerView) findViewById(R.id.my_recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setVisibility(View.GONE);
     }
 
     @Override
     public void showBooks(ArrayList<BookData> books) {
         Log.v(TAG, "showBooks");
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new BookOverviewAdapter(this, books);
         recyclerView.setAdapter(adapter);
+    }
+
+    private void addBooks() {
+        SparseIntArray checkedBooks = adapter.getCheckedBooks();
+        if (checkedBooks == null || checkedBooks.size() == 0) {
+            Snackbar.make(coordinatorLayout, R.string.hint_need_checked, Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+        presenter.addToShelf(checkedBooks);
     }
 
     @Override
@@ -117,10 +139,6 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
     @Override
     public void showProgress() {
 
-    }
-
-    private void addBooks() {
-        presenter.addToShelf(adapter.getCheckedBooks());
     }
 
     @Override

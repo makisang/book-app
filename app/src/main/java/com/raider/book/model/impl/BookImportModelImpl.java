@@ -51,7 +51,7 @@ public class BookImportModelImpl implements IBookImportModel {
             Log.v(TAG, "TraverseBookTask complete");
             Log.v(TAG, books.toString());
             if (!shutdownRequested) {
-                // 给Presenter遍历的结果
+                // 通知Presenter遍历的结果
                 EventBus.getDefault().post(new TraverseBookResult(books));
             }
         }

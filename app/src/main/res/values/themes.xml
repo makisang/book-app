@@ -2,9 +2,9 @@
 <resources>
 
     <style name="RaiderBook" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+        <item name="colorPrimary">@color/teal_colorPrimary</item>
+        <item name="colorPrimaryDark">@color/teal_colorPrimaryDark</item>
+        <item name="android:statusBarColor">@color/teal_colorPrimaryDark</item>
         <item name="android:windowBackground">@color/light_grey</item>
         <item name="android:windowContentTransitions">true</item>
     </style>

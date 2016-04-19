@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#009688</color>
-    <color name="colorPrimaryDark">#00695C</color>
+    <color name="teal_colorPrimary">#009688</color>
+    <color name="teal_colorPrimaryDark">#00695C</color>
 
     <color name="light_grey">#f5f5f5</color>
+    <color name="mid_grey">#9E9E9E</color>
+
+    <color name="mid_lime">#CDDC39</color>
 </resources>

@@ -56,7 +56,7 @@ public class BookOverviewAdapter extends RecyclerView.Adapter<BookOverviewAdapte
         return books == null ? 0 : books.size();
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
+    static class MyViewHolder extends RecyclerView.ViewHolder {
         TextView textView;
         AppCompatCheckBox checkBox;
 

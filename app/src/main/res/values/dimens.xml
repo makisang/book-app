@@ -5,4 +5,8 @@
 
     <dimen name="common_padding">16dp</dimen>
     <dimen name="common_margin">16dp</dimen>
+
+    <dimen name="toolbar_elevation">4dp</dimen>
+
+    <dimen name="shelf_book_height">100dp</dimen>
 </resources>
