@@ -14,15 +14,23 @@ import android.view.MenuItem;
 
 import com.raider.book.R;
 import com.raider.book.adapter.BookInShelfAdapter;
+import com.raider.book.event.EventUpdateShelf;
 import com.raider.book.model.entity.BookData;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 
 public class ShelfActivity extends AppCompatActivity {
     private static final String EXTRA_SHELF_BOOKS = "shelfBooks";
+    private static final int REQUEST_BOOK_IMPORT = 1;
     private static final int SPAN_COUNT = 3;
 
     private RecyclerView recyclerView;
+    private BookInShelfAdapter adapter;
+    private ArrayList<BookData> shelfBooks;
 
     @SuppressWarnings("unchecked")
     public static void start(Activity activity, ArrayList<BookData> books) {
@@ -36,12 +44,18 @@ public class ShelfActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shelf);
         getWindow().setAllowEnterTransitionOverlap(true);
+        EventBus.getDefault().register(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
         initViews();
 
         parseIntent(getIntent());
+    }
+
+    private void parseIntent(Intent intent) {
+        shelfBooks = intent.getParcelableArrayListExtra(EXTRA_SHELF_BOOKS);
+        setAdapter(shelfBooks);
     }
 
     @Override
@@ -57,7 +71,7 @@ public class ShelfActivity extends AppCompatActivity {
         switch (id) {
             case R.id.action_import:
                 // 跳转至导书
-                BookImportActivity.start(this);
+                BookImportActivity.start(this, REQUEST_BOOK_IMPORT);
                 return true;
         }
 
@@ -69,10 +83,33 @@ public class ShelfActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new GridLayoutManager(this, SPAN_COUNT));
     }
 
-    private void parseIntent(Intent intent) {
-        ArrayList<BookData> shelfBooks = intent.getParcelableArrayListExtra(EXTRA_SHELF_BOOKS);
-        BookInShelfAdapter adapter = new BookInShelfAdapter(this, shelfBooks);
-        recyclerView.setAdapter(adapter);
+
+    private void setAdapter(ArrayList<BookData> books) {
+        if (adapter == null) {
+            adapter = new BookInShelfAdapter(this, books);
+            recyclerView.setAdapter(adapter);
+        } else {
+            adapter.update(books);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void updateShelf(EventUpdateShelf eventUpdateShelf) {
+        // 收到导书Model层的通知，更新RecyclerView
+        shelfBooks.addAll(0, eventUpdateShelf.addedBooks);
+        setAdapter(shelfBooks);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
 }

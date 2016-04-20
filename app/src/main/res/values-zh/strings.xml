@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- BookImportActivity -->
     <string name="hint_need_checked">请选择文件哦</string>
+    <string name="hint_add_book_success">添加了%1$d本书到书架</string>
 </resources>

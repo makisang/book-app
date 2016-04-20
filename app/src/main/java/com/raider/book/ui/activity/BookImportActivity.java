@@ -43,16 +43,15 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
     private BookOverviewAdapter adapter;
 
     @SuppressWarnings("unchecked")
-    public static void start(Activity activity) {
+    public static void start(Activity activity, int requestCode) {
         Intent intent = new Intent(activity, BookImportActivity.class);
-        ActivityCompat.startActivity(activity, intent, ActivityOptions.makeSceneTransitionAnimation(activity).toBundle());
+        ActivityCompat.startActivityForResult(activity, intent, requestCode, ActivityOptions.makeSceneTransitionAnimation(activity).toBundle());
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_import);
-        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.my_coordinator);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
@@ -97,6 +96,7 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
     }
 
     private void initViews() {
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.my_coordinator);
         progressBar = (ContentLoadingProgressBar) findViewById(R.id.my_progress);
         recyclerView = (RecyclerView) findViewById(R.id.my_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -116,6 +116,7 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
             Snackbar.make(coordinatorLayout, R.string.hint_need_checked, Snackbar.LENGTH_SHORT).show();
             return;
         }
+        // Model层更新数据库
         presenter.addToShelf(checkedBooks);
     }
 
@@ -139,6 +140,12 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
     @Override
     public void showProgress() {
 
+    }
+
+    @Override
+    public void showSuccessHint(ArrayList<BookData> addedBooks) {
+        String hint = String.format(getResources().getString(R.string.hint_add_book_success), addedBooks.size());
+        Snackbar.make(coordinatorLayout, hint, Snackbar.LENGTH_SHORT).show();
     }
 
     @Override

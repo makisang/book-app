@@ -9,7 +9,7 @@ import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 
 import com.raider.book.R;
-import com.raider.book.contract.DBConstants;
+import com.raider.book.contract.RaiderDBContract;
 import com.raider.book.model.entity.BookData;
 import com.raider.book.utils.BookDBOpenHelper;
 
@@ -36,14 +36,14 @@ public class SplashActivity extends AppCompatActivity {
         @Override
         protected ArrayList<BookData> doInBackground(Void... params) {
             SQLiteDatabase db = new BookDBOpenHelper(SplashActivity.this.getApplicationContext()).getWritableDatabase();
-            Cursor cursor = db.rawQuery("SELECT * FROM " + BookDBOpenHelper.BOOK_TABLE_NAME, null);
+            Cursor cursor = db.rawQuery("SELECT * FROM " + RaiderDBContract.ShelfReader.TABLE_NAME, null);
             ArrayList<BookData> books = new ArrayList<>();
             if (cursor == null) {
                 return books;
             }
             while (cursor.moveToNext()) {
-                String name = cursor.getString(cursor.getColumnIndex(DBConstants.COLUMN_NAME));
-                String path = cursor.getString(cursor.getColumnIndex(DBConstants.COLUMN_PATH));
+                String name = cursor.getString(cursor.getColumnIndex(RaiderDBContract.ShelfReader.COLUMN_NAME_NAME));
+                String path = cursor.getString(cursor.getColumnIndex(RaiderDBContract.ShelfReader.COLUMN_NAME_PATH));
                 books.add(new BookData(name, path));
             }
             cursor.close();

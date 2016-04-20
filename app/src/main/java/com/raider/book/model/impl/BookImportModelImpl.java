@@ -7,9 +7,10 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseIntArray;
 
-import com.raider.book.contract.DBConstants;
-import com.raider.book.engine.TraverseBook;
-import com.raider.book.event.TraverseBookResult;
+import com.raider.book.contract.RaiderDBContract;
+import com.raider.book.engine.ScanSD;
+import com.raider.book.event.EventScanSDResult;
+import com.raider.book.event.EventUpdateShelf;
 import com.raider.book.model.IBookImportModel;
 import com.raider.book.model.entity.BookData;
 import com.raider.book.utils.BookDBOpenHelper;
@@ -32,7 +33,7 @@ public class BookImportModelImpl implements IBookImportModel {
     @Override
     public void stopTraverse() {
         shutdownRequested = true;
-        TraverseBook.shutdown();
+        ScanSD.shutdown();
     }
 
     /**
@@ -41,7 +42,7 @@ public class BookImportModelImpl implements IBookImportModel {
     private class TraverseBookTask extends AsyncTask<Void, Void, ArrayList<BookData>> {
         @Override
         protected ArrayList<BookData> doInBackground(Void... params) {
-            books = TraverseBook.traverseInSD();
+            books = ScanSD.traverseInSD();
             return books;
         }
 
@@ -52,24 +53,26 @@ public class BookImportModelImpl implements IBookImportModel {
             Log.v(TAG, books.toString());
             if (!shutdownRequested) {
                 // 通知Presenter遍历的结果
-                EventBus.getDefault().post(new TraverseBookResult(books));
+                EventBus.getDefault().post(new EventScanSDResult(books));
             }
         }
     }
 
     @Override
-    public void save2DB(Context context, SparseIntArray sparseIntArray) {
-        BookDBOpenHelper openHelper = new BookDBOpenHelper(context);
-        SQLiteDatabase db = openHelper.getWritableDatabase();
+    public ArrayList<BookData> save2DB(Context context, SparseIntArray sparseIntArray) {
+        // 用于通知书架更新界面
+        ArrayList<BookData> addedBooks = new ArrayList<>();
 
         ArrayList<ContentValues> insertList = new ArrayList<>();
+        SQLiteDatabase db = new BookDBOpenHelper(context).getWritableDatabase();
         if (books != null) {
             for (int i = 0; i < sparseIntArray.size(); i++) {
                 int _i = sparseIntArray.valueAt(i);
                 BookData book = books.get(_i);
+                addedBooks.add(book);
                 ContentValues contentValues = new ContentValues();
-                contentValues.put(DBConstants.COLUMN_NAME, book.name);
-                contentValues.put(DBConstants.COLUMN_PATH, book.path);
+                contentValues.put(RaiderDBContract.ShelfReader.COLUMN_NAME_NAME, book.name);
+                contentValues.put(RaiderDBContract.ShelfReader.COLUMN_NAME_PATH, book.path);
                 insertList.add(contentValues);
             }
         }
@@ -77,14 +80,17 @@ public class BookImportModelImpl implements IBookImportModel {
         db.beginTransaction();
         try {
             for (ContentValues contentValues : insertList) {
-                db.insert(BookDBOpenHelper.BOOK_TABLE_NAME, null, contentValues);
+                db.insert(RaiderDBContract.ShelfReader.TABLE_NAME, null, contentValues);
             }
             db.setTransactionSuccessful();
+            EventBus.getDefault().post(new EventUpdateShelf(addedBooks));
         } catch (Exception e) {
             Log.e(TAG, "db transaction fail in BookImportModelImpl");
+            addedBooks.clear();
         } finally {
             db.endTransaction();
         }
+        return addedBooks;
     }
 
 }

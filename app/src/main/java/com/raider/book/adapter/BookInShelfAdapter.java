@@ -24,6 +24,11 @@ public class BookInShelfAdapter extends RecyclerView.Adapter<BookInShelfAdapter.
         this.shelfBooks = shelfBooks;
     }
 
+    public void update(ArrayList<BookData> shelfBooks) {
+        this.shelfBooks = shelfBooks;
+        notifyDataSetChanged();
+    }
+
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View inflate = LayoutInflater.from(mContext).inflate(R.layout.item_book_in_shelf, parent, false);
