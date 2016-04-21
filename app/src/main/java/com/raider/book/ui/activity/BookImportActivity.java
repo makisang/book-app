@@ -110,16 +110,6 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
         recyclerView.setAdapter(adapter);
     }
 
-    private void addBooks() {
-        SparseIntArray checkedBooks = adapter.getCheckedBooks();
-        if (checkedBooks == null || checkedBooks.size() == 0) {
-            Snackbar.make(coordinatorLayout, R.string.hint_need_checked, Snackbar.LENGTH_SHORT).show();
-            return;
-        }
-        // Model层更新数据库
-        presenter.addToShelf(checkedBooks);
-    }
-
     @Override
     public void hideProgress() {
         Log.v(TAG, "hideProgress");
@@ -146,6 +136,16 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
     public void showSuccessHint(ArrayList<BookData> addedBooks) {
         String hint = String.format(getResources().getString(R.string.hint_add_book_success), addedBooks.size());
         Snackbar.make(coordinatorLayout, hint, Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void addBooks() {
+        SparseIntArray checkedBooks = adapter.getCheckedBooks();
+        if (checkedBooks == null || checkedBooks.size() == 0) {
+            Snackbar.make(coordinatorLayout, R.string.hint_need_checked, Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+        // 更新书架
+        presenter.addToShelf(checkedBooks);
     }
 
     @Override

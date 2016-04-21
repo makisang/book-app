@@ -16,7 +16,7 @@ public interface IBookImportView {
     void showProgress();
 
     /**
-     * 导书成功，显示提示信息
+     * 导书操作，显示提示信息
      */
     void showSuccessHint(ArrayList<BookData> addedBooks);
 }

@@ -3,13 +3,11 @@ package com.raider.book.model.impl;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseIntArray;
 
 import com.raider.book.contract.RaiderDBContract;
-import com.raider.book.engine.ScanSD;
-import com.raider.book.event.EventScanSDResult;
+import com.raider.book.engine.BookScanner;
 import com.raider.book.event.EventUpdateShelf;
 import com.raider.book.model.IBookImportModel;
 import com.raider.book.model.entity.BookData;
@@ -26,36 +24,15 @@ public class BookImportModelImpl implements IBookImportModel {
     ArrayList<BookData> books;
 
     @Override
-    public void traverse() {
-        new TraverseBookTask().execute();
+    public ArrayList<BookData> traverse() {
+        books = BookScanner.traverseInSD();
+        return books;
     }
 
     @Override
     public void stopTraverse() {
         shutdownRequested = true;
-        ScanSD.shutdown();
-    }
-
-    /**
-     * 遍历.txt文件
-     */
-    private class TraverseBookTask extends AsyncTask<Void, Void, ArrayList<BookData>> {
-        @Override
-        protected ArrayList<BookData> doInBackground(Void... params) {
-            books = ScanSD.traverseInSD();
-            return books;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<BookData> books) {
-            super.onPostExecute(books);
-            Log.v(TAG, "TraverseBookTask complete");
-            Log.v(TAG, books.toString());
-            if (!shutdownRequested) {
-                // 通知Presenter遍历的结果
-                EventBus.getDefault().post(new EventScanSDResult(books));
-            }
-        }
+        BookScanner.shutdown();
     }
 
     @Override

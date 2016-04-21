@@ -8,7 +8,7 @@ import com.raider.book.model.entity.BookData;
 import java.util.ArrayList;
 
 public interface IBookImportModel {
-    void traverse();
+    ArrayList<BookData> traverse();
 
     void stopTraverse();
 

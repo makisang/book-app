@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * Created by wkq on 2016/4/12.
  * traverse all .txt files.
  */
-public class ScanSD {
+public class BookScanner {
     private static final String TAG = "test";
     private static final String FILE_FILTER_TXT = ".txt";
 
