@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- shelfActivity -->
+    <string name="toolbar_shelf">书架</string>
+    <string name="drawer_open">打开侧滑</string>
+    <string name="drawer_close">关闭侧滑</string>
+
     <!-- BookImportActivity -->
+    <string name="toolbar_import">导书</string>
     <string name="hint_need_checked">请选择文件哦</string>
     <string name="hint_add_book_success">添加了%1$d本书到书架</string>
+    <string name="already_in_shelf">已在书架中</string>
 </resources>

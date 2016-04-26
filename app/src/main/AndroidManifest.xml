@@ -29,6 +29,7 @@
 
         <activity
             android:name=".ui.activity.BookImportActivity"
+            android:parentActivityName=".ui.activity.ShelfActivity"
             android:theme="@style/RaiderBook.Import"/>
 
     </application>

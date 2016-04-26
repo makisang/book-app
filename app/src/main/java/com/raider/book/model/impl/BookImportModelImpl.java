@@ -8,31 +8,21 @@ import android.util.SparseIntArray;
 
 import com.raider.book.contract.RaiderDBContract;
 import com.raider.book.engine.BookScanner;
-import com.raider.book.event.EventUpdateShelf;
 import com.raider.book.model.IBookImportModel;
 import com.raider.book.model.entity.BookData;
 import com.raider.book.utils.BookDBOpenHelper;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 
 public class BookImportModelImpl implements IBookImportModel {
     private static final String TAG = "test";
 
-    private volatile boolean shutdownRequested = false;
     ArrayList<BookData> books;
 
     @Override
     public ArrayList<BookData> traverse() {
         books = BookScanner.traverseInSD();
         return books;
-    }
-
-    @Override
-    public void stopTraverse() {
-        shutdownRequested = true;
-        BookScanner.shutdown();
     }
 
     @Override
@@ -60,7 +50,6 @@ public class BookImportModelImpl implements IBookImportModel {
                 db.insert(RaiderDBContract.ShelfReader.TABLE_NAME, null, contentValues);
             }
             db.setTransactionSuccessful();
-            EventBus.getDefault().post(new EventUpdateShelf(addedBooks));
         } catch (Exception e) {
             Log.e(TAG, "db transaction fail in BookImportModelImpl");
             addedBooks.clear();

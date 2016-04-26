@@ -14,11 +14,11 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.ContentLoadingProgressBar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,18 +33,21 @@ import com.raider.book.ui.view.IBookImportView;
 import java.util.ArrayList;
 
 public class BookImportActivity extends AppCompatActivity implements IBookImportView {
-    private static final String TAG = "test";
+    private static final String RESULT_BOOK_ADDED = "book_added";
     private static final int MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 213;
+    private static final String EXTRA_BOOKS_IN_SHELF = "books_in_shelf";
 
     private CoordinatorLayout coordinatorLayout;
     private RecyclerView recyclerView;
     private BookImportPresenter presenter;
     private ContentLoadingProgressBar progressBar;
     private BookOverviewAdapter adapter;
+    private ArrayList<BookData> shelfBooks;
 
     @SuppressWarnings("unchecked")
-    public static void start(Activity activity, int requestCode) {
+    public static void start(Activity activity, int requestCode, ArrayList<BookData> shelfBooks) {
         Intent intent = new Intent(activity, BookImportActivity.class);
+        intent.putParcelableArrayListExtra(EXTRA_BOOKS_IN_SHELF, shelfBooks);
         ActivityCompat.startActivityForResult(activity, intent, requestCode, ActivityOptions.makeSceneTransitionAnimation(activity).toBundle());
     }
 
@@ -53,9 +56,9 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_import);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(toolbar);
+        customToolBar();
         initViews();
+        parseIntent();
 
         presenter = new BookImportPresenter(this.getApplicationContext(), this);
 
@@ -76,6 +79,17 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
                     presenter.startTraverse();
                 break;
         }
+    }
+
+    private void parseIntent() {
+        shelfBooks = getIntent().getParcelableArrayListExtra(EXTRA_BOOKS_IN_SHELF);
+    }
+
+    private void customToolBar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -105,14 +119,12 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
 
     @Override
     public void showBooks(ArrayList<BookData> books) {
-        Log.v(TAG, "showBooks");
-        adapter = new BookOverviewAdapter(this, books);
+        adapter = new BookOverviewAdapter(this, books, shelfBooks);
         recyclerView.setAdapter(adapter);
     }
 
     @Override
     public void hideProgress() {
-        Log.v(TAG, "hideProgress");
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
         recyclerView.setAlpha(0f);
         recyclerView.setVisibility(View.VISIBLE);
@@ -133,9 +145,14 @@ public class BookImportActivity extends AppCompatActivity implements IBookImport
     }
 
     @Override
-    public void showSuccessHint(ArrayList<BookData> addedBooks) {
+    public void handleSuccess(ArrayList<BookData> addedBooks) {
         String hint = String.format(getResources().getString(R.string.hint_add_book_success), addedBooks.size());
         Snackbar.make(coordinatorLayout, hint, Snackbar.LENGTH_SHORT).show();
+        // 返回书架
+        Intent intent = new Intent();
+        intent.putExtra(RESULT_BOOK_ADDED, true);
+        setResult(0, intent);
+        finishAfterTransition();
     }
 
     private void addBooks() {

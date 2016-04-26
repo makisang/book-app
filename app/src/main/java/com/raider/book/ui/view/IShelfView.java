@@ -4,13 +4,11 @@ import com.raider.book.model.entity.BookData;
 
 import java.util.ArrayList;
 
-public interface IBookImportView {
+public interface IShelfView {
 
-    void showBooks(ArrayList<BookData> books);
+    void updateBookGrid(ArrayList<BookData> books);
 
     void hideProgress();
 
     void showProgress();
-
-    void handleSuccess(ArrayList<BookData> addedBooks);
 }

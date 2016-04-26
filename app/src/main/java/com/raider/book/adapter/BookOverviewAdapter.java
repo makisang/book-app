@@ -20,32 +20,45 @@ import java.util.ArrayList;
 public class BookOverviewAdapter extends RecyclerView.Adapter<BookOverviewAdapter.MyViewHolder> {
     Context context;
     ArrayList<BookData> books;
+    ArrayList<BookData> shelfBooks;
     SparseIntArray sparseIntArray = new SparseIntArray();
+    String STATUS_IN_SHELF;
 
-    public BookOverviewAdapter(Context context, ArrayList<BookData> books) {
+    public BookOverviewAdapter(Context context, ArrayList<BookData> books, ArrayList<BookData> shelfBooks) {
         this.context = context;
         this.books = books;
+        this.shelfBooks = shelfBooks;
+        STATUS_IN_SHELF = context.getResources().getString(R.string.already_in_shelf);
     }
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        MyViewHolder myViewHolder = new MyViewHolder(LayoutInflater.from(context).inflate(R.layout.item_book_overview, parent, false));
-        return myViewHolder;
+        return new MyViewHolder(LayoutInflater.from(context).inflate(R.layout.item_book_overview, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, final int position) {
-        BookData bookData = books.get(position);
-        holder.textView.setText(bookData.name);
+    public void onBindViewHolder(MyViewHolder holder, int position) {
+        final int itemPosition = holder.getAdapterPosition();
+        BookData bookData = books.get(itemPosition);
+        holder.name.setText(bookData.name);
 
-        holder.checkBox.setChecked(sparseIntArray.indexOfKey(position) >= 0);
+        if (shelfBooks != null && shelfBooks.contains(bookData)) {
+            holder.status.setVisibility(View.VISIBLE);
+            holder.checkBox.setVisibility(View.GONE);
+            holder.status.setText(STATUS_IN_SHELF);
+            return;
+        }
+
+        holder.status.setVisibility(View.GONE);
+        holder.checkBox.setVisibility(View.VISIBLE);
+        holder.checkBox.setChecked(sparseIntArray.indexOfKey(itemPosition) >= 0);
         holder.checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (((AppCompatCheckBox) v).isChecked()) {
-                    sparseIntArray.put(position, position);
+                    sparseIntArray.put(itemPosition, itemPosition);
                 } else {
-                    sparseIntArray.delete(position);
+                    sparseIntArray.delete(itemPosition);
                 }
             }
         });
@@ -57,12 +70,14 @@ public class BookOverviewAdapter extends RecyclerView.Adapter<BookOverviewAdapte
     }
 
     static class MyViewHolder extends RecyclerView.ViewHolder {
-        TextView textView;
+        TextView name;
+        TextView status;
         AppCompatCheckBox checkBox;
 
         public MyViewHolder(View view) {
             super(view);
-            textView = (TextView) view.findViewById(R.id.my_tv);
+            name = (TextView) view.findViewById(R.id.my_tv);
+            status = (TextView) view.findViewById(R.id.status_tv);
             checkBox = (AppCompatCheckBox) view.findViewById(R.id.my_cb);
         }
     }

@@ -10,7 +10,5 @@ import java.util.ArrayList;
 public interface IBookImportModel {
     ArrayList<BookData> traverse();
 
-    void stopTraverse();
-
     ArrayList<BookData> save2DB(Context context, SparseIntArray sparseIntArray);
 }

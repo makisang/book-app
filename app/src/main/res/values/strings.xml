@@ -3,4 +3,15 @@
 
     <string name="hello_world">Hello world!</string>
 
+    <!-- shelfActivity -->
+    <string name="toolbar_shelf">Shelf</string>
+    <string name="drawer_open">open drawer</string>
+    <string name="drawer_close">close drawer</string>
+
+    <!-- BookImportActivity -->
+    <string name="toolbar_import">ImportBook</string>
+    <string name="hint_need_checked">please choose at least one file</string>
+    <string name="hint_add_book_success">added book number is:%1$d</string>
+    <string name="already_in_shelf">already in shelf</string>
+
 </resources>

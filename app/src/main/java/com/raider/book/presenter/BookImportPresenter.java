@@ -11,6 +11,7 @@ import com.raider.book.ui.view.IBookImportView;
 import java.util.ArrayList;
 
 import rx.Observable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -20,6 +21,8 @@ public class BookImportPresenter {
     private Context mContext;
     private IBookImportView iBookImportView;
     private IBookImportModel iBookImportModel;
+    private Subscription subscription1;
+    private Subscription subscription2;
 
     public BookImportPresenter(Context context, IBookImportView iBookImportView) {
         this.mContext = context;
@@ -30,22 +33,22 @@ public class BookImportPresenter {
     // 扫描所有电子书
     public void startTraverse() {
         iBookImportView.showProgress();
-        _getObservable1().subscribe(_getObserver1());
+        subscription1 = _getObservable1().subscribe(_getSubscriber1());
     }
 
     private rx.Observable<ArrayList<BookData>> _getObservable1() {
         return Observable.just(true)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .map(new Func1<Boolean, ArrayList<BookData>>() {
                     @Override
                     public ArrayList<BookData> call(Boolean aBoolean) {
                         return iBookImportModel.traverse();
                     }
-                });
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
-    private Action1<ArrayList<BookData>> _getObserver1() {
+    private Action1<ArrayList<BookData>> _getSubscriber1() {
         return new Action1<ArrayList<BookData>>() {
             @Override
             public void call(ArrayList<BookData> books) {
@@ -57,33 +60,38 @@ public class BookImportPresenter {
 
     // 将选中的书添加到书架
     public void addToShelf(SparseIntArray sparseIntArray) {
-        _getObservable2(sparseIntArray).subscribe(_getObserver2());
+        subscription2 = _getObservable2(sparseIntArray).subscribe(_getSubscriber2());
     }
 
     private rx.Observable<ArrayList<BookData>> _getObservable2(SparseIntArray sparseIntArray) {
         return Observable.just(sparseIntArray)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .map(new Func1<SparseIntArray, ArrayList<BookData>>() {
                     @Override
                     public ArrayList<BookData> call(SparseIntArray sparseIntArray) {
                         return iBookImportModel.save2DB(mContext, sparseIntArray);
                     }
-                });
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
-    private Action1<ArrayList<BookData>> _getObserver2() {
+    private Action1<ArrayList<BookData>> _getSubscriber2() {
         return new Action1<ArrayList<BookData>>() {
             @Override
             public void call(ArrayList<BookData> addedBooks) {
-                iBookImportView.showSuccessHint(addedBooks);
+                iBookImportView.handleSuccess(addedBooks);
             }
         };
     }
 
     public void onDestroy() {
-        iBookImportModel.stopTraverse();
         iBookImportModel = null;
+        if (subscription1 != null) {
+            subscription1.unsubscribe();
+        }
+        if (subscription2 != null) {
+            subscription2.unsubscribe();
+        }
     }
 
 }
