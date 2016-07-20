@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context=".home.MainActivity">
+
+    <item
+        android:id="@+id/online_books"
+        android:title="@string/online_books"/>
+</menu>

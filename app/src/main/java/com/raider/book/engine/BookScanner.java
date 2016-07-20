@@ -2,7 +2,7 @@ package com.raider.book.engine;
 
 import android.os.Environment;
 
-import com.raider.book.model.entity.BookData;
+import com.raider.book.entity.BookData;
 import com.raider.book.utils.SDCardUtil;
 
 import java.io.File;
@@ -48,6 +48,7 @@ public class BookScanner {
             }
         } else {
             if (file.getName().endsWith(FILE_FILTER_TXT)) {
+//                Log.d(TAG, file.getAbsolutePath());
                 // 获取BookData对象，放入集合中
                 BookData book = new BookData(parseName(file.getName()), file.getAbsolutePath());
                 books.add(book);
@@ -56,7 +57,7 @@ public class BookScanner {
     }
 
     private static String parseName(String name) {
-//        Log.w(TAG, name);
+//        Log.d(TAG, name);
         return name.substring(0, name.length() - (FILE_FILTER_TXT.length()));
     }
 

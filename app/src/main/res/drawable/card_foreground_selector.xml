@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- selected after long click -->
+    <item android:state_selected="true">
+        <shape>
+            <solid android:color="@color/card_fg_pressed"/>
+        </shape>
+    </item>
+
+    <!-- click -->
+    <item android:state_pressed="true">
+        <shape>
+            <solid android:color="@color/card_fg_pressed"/>
+        </shape>
+    </item>
+
+    <!-- normal -->
+    <item android:state_pressed="false">
+        <shape>
+            <solid android:color="@color/card_fg_unpressed"/>
+        </shape>
+    </item>
+
+</selector>
