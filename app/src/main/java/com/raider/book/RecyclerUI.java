@@ -7,9 +7,6 @@ package com.raider.book;
  */
 public interface RecyclerUI<T> extends BaseView<T> {
 
-    /**
-     * Init adapter in Presenter.
-     */
     void _setAdapter2Presenter();
 
     void _scrollToPosition(int position);

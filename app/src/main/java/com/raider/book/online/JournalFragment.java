@@ -51,7 +51,6 @@ public class JournalFragment extends Fragment implements OnlineContract.JournalV
 
     }
 
-
     class MyHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {

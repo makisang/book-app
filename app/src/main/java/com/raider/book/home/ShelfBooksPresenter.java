@@ -154,7 +154,7 @@ public class ShelfBooksPresenter implements RecyclerPresenter, MyItemClickListen
     }
 
     public void addBooks(ArrayList<BookData> books) {
-        mAdapter.addItems(books, 0);
+        mAdapter.addItems(0, books);
         iView._scrollToPosition(0);
     }
 

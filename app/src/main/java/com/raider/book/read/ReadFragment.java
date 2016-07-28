@@ -9,7 +9,9 @@ import android.view.ViewGroup;
 import com.raider.book.BaseFragment;
 import com.raider.book.BaseView;
 import com.raider.book.R;
-import com.raider.book.custom.SlideBookView;
+import com.raider.book.custom.sbv.SlideBookView;
+import com.raider.book.custom.sbv.SlideModel;
+import com.raider.book.custom.sbv.SlidePresenter;
 import com.raider.book.entity.BookData;
 
 /**
@@ -36,6 +38,7 @@ public class ReadFragment extends BaseFragment implements BaseView<ReadPresenter
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_read, container, false);
         bookView = (SlideBookView) root.findViewById(R.id.book_view);
+        SlidePresenter presenter = new SlidePresenter(bookView, new SlideModel());
         return root;
     }
 

@@ -54,7 +54,7 @@ public abstract class MyBaseAdapter<T, V extends RecyclerView.ViewHolder> extend
         notifyItemInserted(position);
     }
 
-    public void addItems(ArrayList<T> dataList, int position) {
+    public void addItems(int position, ArrayList<T> dataList) {
         if (this.dataList.addAll(position, dataList)) {
             notifyItemRangeInserted(position, dataList.size());
         }

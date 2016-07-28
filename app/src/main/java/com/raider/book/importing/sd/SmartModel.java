@@ -13,14 +13,14 @@ import com.raider.book.utils.BookDBOpenHelper;
 
 import java.util.ArrayList;
 
-public class SDImportModel implements SDImportContract.Model {
+public class SmartModel implements SDImportContract.SmartModel {
 
     private static final String TAG = "test";
 
     Context mContext;
     ArrayList<BookData> books;
 
-    public SDImportModel(Context context) {
+    public SmartModel(Context context) {
         this.mContext = context;
     }
 
@@ -56,7 +56,7 @@ public class SDImportModel implements SDImportContract.Model {
             }
             db.setTransactionSuccessful();
         } catch (Exception e) {
-            Log.e(TAG, "db transaction fail in SDImportModel");
+            Log.e(TAG, "db transaction fail in SmartModel");
             addedBooks.clear();
         } finally {
             db.endTransaction();
@@ -64,5 +64,4 @@ public class SDImportModel implements SDImportContract.Model {
         }
         return addedBooks;
     }
-
 }

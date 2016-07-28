@@ -7,12 +7,10 @@ public class ReadPresenter implements BasePresenter {
 
     @Override
     public void onViewCreated() {
-
     }
 
     @Override
     public void onDestroy() {
-
     }
 
 }

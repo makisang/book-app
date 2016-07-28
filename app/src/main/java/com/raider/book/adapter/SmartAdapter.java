@@ -17,35 +17,32 @@ import java.util.ArrayList;
 /**
  * 显示所有的.txt文件
  */
-public class BookInSDAdapter extends RecyclerView.Adapter<BookInSDAdapter.MyViewHolder> {
-    Context context;
-    ArrayList<BookData> books;
+public class SmartAdapter extends MyBaseAdapter<BookData, SmartAdapter.MyViewHolder> {
     ArrayList<BookData> shelfBooks;
     SparseIntArray sparseIntArray = new SparseIntArray();
-    String STATUS_IN_SHELF;
+    String IN_SHELF;
 
-    public BookInSDAdapter(Context context, ArrayList<BookData> books, ArrayList<BookData> shelfBooks) {
-        this.context = context;
-        this.books = books;
+    public SmartAdapter(Context context, ArrayList<BookData> books, ArrayList<BookData> shelfBooks) {
+        super(context, books);
         this.shelfBooks = shelfBooks;
-        STATUS_IN_SHELF = context.getResources().getString(R.string.already_in_shelf);
+        IN_SHELF = context.getResources().getString(R.string.already_in_shelf);
     }
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new MyViewHolder(LayoutInflater.from(context).inflate(R.layout.item_book_overview, parent, false));
+        return new MyViewHolder(LayoutInflater.from(mContext).inflate(R.layout.item_book_overview, parent, false));
     }
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
         final int itemPosition = holder.getAdapterPosition();
-        BookData bookData = books.get(itemPosition);
+        BookData bookData = dataList.get(itemPosition);
         holder.name.setText(bookData.name);
 
         if (shelfBooks != null && shelfBooks.contains(bookData)) {
             holder.status.setVisibility(View.VISIBLE);
             holder.checkBox.setVisibility(View.GONE);
-            holder.status.setText(STATUS_IN_SHELF);
+            holder.status.setText(IN_SHELF);
             return;
         }
 
@@ -62,11 +59,6 @@ public class BookInSDAdapter extends RecyclerView.Adapter<BookInSDAdapter.MyView
                 }
             }
         });
-    }
-
-    @Override
-    public int getItemCount() {
-        return books == null ? 0 : books.size();
     }
 
     static class MyViewHolder extends RecyclerView.ViewHolder {
@@ -86,5 +78,4 @@ public class BookInSDAdapter extends RecyclerView.Adapter<BookInSDAdapter.MyView
     public SparseIntArray getCheckedBooks() {
         return sparseIntArray;
     }
-
 }

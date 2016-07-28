@@ -18,9 +18,9 @@ public class JournalPresenter implements RecyclerPresenter {
     OnlineContract.JournalModel iModel;
 
     public JournalPresenter(OnlineContract.JournalView view, OnlineContract.JournalModel model) {
-        this.iView = view;
-        this.iModel = model;
-        this.iView._setPresenter(this);
+        iView = view;
+        iModel = model;
+        iView._setPresenter(this);
     }
 
     @Override
@@ -31,12 +31,6 @@ public class JournalPresenter implements RecyclerPresenter {
     @Override
     public void onViewCreated() {
         iView._setAdapter2Presenter();
-    }
-
-    @Override
-    public void onDestroy() {
-        iView = null;
-        iModel = null;
     }
 
     @SuppressWarnings("unchecked")
@@ -51,5 +45,11 @@ public class JournalPresenter implements RecyclerPresenter {
                         mAdapter.addItems(result.data);
                     }
                 });
+    }
+
+    @Override
+    public void onDestroy() {
+        iView = null;
+        iModel = null;
     }
 }
