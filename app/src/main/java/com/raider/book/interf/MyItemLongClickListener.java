@@ -1,4 +1,4 @@
-package com.raider.book.adapter;
+package com.raider.book.interf;
 
 import android.view.View;
 

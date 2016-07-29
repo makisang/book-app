@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.raider.book.R;
 import com.raider.book.entity.BookData;
+import com.raider.book.interf.MyCheckChangedListener;
 
 import java.util.ArrayList;
 
@@ -21,11 +22,16 @@ public class SmartAdapter extends MyBaseAdapter<BookData, SmartAdapter.MyViewHol
     ArrayList<BookData> shelfBooks;
     SparseIntArray sparseIntArray = new SparseIntArray();
     String IN_SHELF;
+    MyCheckChangedListener ccListener;
 
     public SmartAdapter(Context context, ArrayList<BookData> books, ArrayList<BookData> shelfBooks) {
         super(context, books);
         this.shelfBooks = shelfBooks;
         IN_SHELF = context.getResources().getString(R.string.already_in_shelf);
+    }
+
+    public void setCheckChangedListener(MyCheckChangedListener listener) {
+        ccListener = listener;
     }
 
     @Override
@@ -52,11 +58,13 @@ public class SmartAdapter extends MyBaseAdapter<BookData, SmartAdapter.MyViewHol
         holder.checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int oldCheckedSize = sparseIntArray.size();
                 if (((AppCompatCheckBox) v).isChecked()) {
                     sparseIntArray.put(itemPosition, itemPosition);
                 } else {
                     sparseIntArray.delete(itemPosition);
                 }
+                ccListener.checkedSizeChanged(oldCheckedSize, sparseIntArray.size());
             }
         });
     }

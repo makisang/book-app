@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AlertDialog;
@@ -30,16 +29,15 @@ import java.util.ArrayList;
 /**
  * Main UI for shelf books.
  */
-public class ShelfBooksFragment extends BaseFragment implements ShelfBooksContract.View {
+public class MainFragment extends BaseFragment implements MainContract.View {
     private static final int SPAN_COUNT = 3;
 
-    ShelfBooksPresenter mPresenter;
-    private FloatingActionButton fab;
+    MainPresenter mPresenter;
     private RecyclerView recyclerView;
     private ContentLoadingProgressBar progressBar;
 
-    public static ShelfBooksFragment newInstance() {
-        return new ShelfBooksFragment();
+    public static MainFragment newInstance() {
+        return new MainFragment();
     }
 
     @Override
@@ -61,21 +59,11 @@ public class ShelfBooksFragment extends BaseFragment implements ShelfBooksContra
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mPresenter.onViewCreated();
-
         // let presenter init data
         mPresenter.loadBooks();
-
-        fab = (FloatingActionButton) (mActivity).findViewById(R.id.my_fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // jump to SDImportActivity
-                SDImportActivity.start(mActivity, MainActivity.REQUEST_BOOK_IMPORT, mPresenter.getAdapter().getDataList());
-            }
-        });
     }
 
-    public void _setPresenter(ShelfBooksPresenter presenter) {
+    public void _setPresenter(MainPresenter presenter) {
         this.mPresenter = presenter;
     }
 
@@ -95,15 +83,8 @@ public class ShelfBooksFragment extends BaseFragment implements ShelfBooksContra
     }
 
     @Override
-    public void _changeMode(boolean enterSelectMode) {
-        MainActivity activity = (MainActivity) mActivity;
-        if (enterSelectMode) {
-            hideFab();
-            activity.showVisualToolBar();
-        } else {
-            _showFab();
-            activity.hideVisualToolBar();
-        }
+    public void _toImportActivity(ArrayList<BookData> books) {
+        SDImportActivity.start(mActivity, MainActivity.REQUEST_BOOK_IMPORT, books);
     }
 
     @Override
@@ -127,6 +108,11 @@ public class ShelfBooksFragment extends BaseFragment implements ShelfBooksContra
     }
 
     @Override
+    public MainActivity _getActivity() {
+        return (MainActivity) mActivity;
+    }
+
+    @Override
     public void _snackDeleteFailureInfo() {
         Snackbar.make(recyclerView, R.string.delete_failure, Snackbar.LENGTH_SHORT).show();
     }
@@ -141,26 +127,6 @@ public class ShelfBooksFragment extends BaseFragment implements ShelfBooksContra
         CustomAnim.showProgress(mActivity.getApplicationContext(), recyclerView, progressBar);
     }
 
-    @Override
-    public void _enableFab() {
-        fab.setEnabled(true);
-    }
-
-    @Override
-    public void _disableFab() {
-        fab.setEnabled(false);
-    }
-
-    @Override
-    public void _showFab() {
-        fab.show();
-        fab.setEnabled(true);
-    }
-
-    private void hideFab() {
-        fab.setEnabled(false);
-        fab.hide();
-    }
 
     @Override
     public void onDestroy() {

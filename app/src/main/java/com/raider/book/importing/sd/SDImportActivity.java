@@ -12,22 +12,24 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
 
 import com.raider.book.R;
-import com.raider.book.VPActivity;
 import com.raider.book.adapter.MyPagerAdapter;
+import com.raider.book.custom.TextFAB;
 import com.raider.book.entity.BookData;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SDImportActivity extends VPActivity {
+public class SDImportActivity extends AppCompatActivity {
 
     private static final int MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 213;
     public static final String EXTRA_BOOKS_IN_SHELF = "books_in_shelf";
+    private TextFAB fab;
+    private SDImportPresenter mPresenter;
 
     @SuppressWarnings("unchecked")
     public static void start(Activity activity, int requestCode, List<BookData> shelfBooks) {
@@ -41,7 +43,8 @@ public class SDImportActivity extends VPActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //set up ToolBar
+        setContentView(R.layout.activity_book_import);
+        initViews();
         customToolBar();
 
         // RunTime permission request for M
@@ -63,6 +66,16 @@ public class SDImportActivity extends VPActivity {
         }
     }
 
+    private void initViews() {
+        fab = (TextFAB) findViewById(R.id.my_fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mPresenter.addToShelf();
+            }
+        });
+    }
+
     private void customToolBar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(toolbar);
@@ -76,7 +89,7 @@ public class SDImportActivity extends VPActivity {
         SmartFragment smartFragment = SmartFragment.newInstance(getIntent().<BookData>getParcelableArrayListExtra(EXTRA_BOOKS_IN_SHELF));
         FileFragment fileFragment = FileFragment.newInstance();
 
-        new SmartPresenter(smartFragment, new SmartModel(this.getApplicationContext()));
+        mPresenter = new SDImportPresenter(smartFragment, new SmartModel(this.getApplicationContext()));
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
         MyPagerAdapter pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
@@ -88,46 +101,26 @@ public class SDImportActivity extends VPActivity {
         tabLayout.setupWithViewPager(viewPager);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_book_import, menu);
-        return super.onCreateOptionsMenu(menu);
+    public void updateFabNumber(int number) {
+        fab.setNumber(number);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        switch (id) {
-            case R.id.action_add:
-                clickAddMenu();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
+    public void enableFab() {
+        fab.setEnabled(true);
     }
 
-    /***
-     * Click on the 'Add' item in menu.
-     */
-    private void clickAddMenu() {
-//        SparseIntArray checkedBooks = adapter.getCheckedBooks();
-//        if (checkedBooks == null || checkedBooks.size() == 0) {
-//            Snackbar.make(coordinatorLayout, R.string.hint_need_checked, Snackbar.LENGTH_SHORT).show();
-//            return;
-//        }
-//        // update db
-//        mPresenter.addToShelf(checkedBooks);
+    public void disableFab() {
+        fab.setEnabled(false);
     }
 
-//    @Override
-//    public void _handleAddBookSuccess(ArrayList<BookData> addedBooks) {
-//        // back to shelf
-//        MainActivity.back(this, addedBooks);
-//    }
-//
-//    @Override
-//    public void _showBooks(ArrayList<BookData> books) {
-////        adapter = new SmartAdapter(this, books, shelfBooks);
-////        recyclerView.setAdapter(adapter);
-//    }
+    public void showFab() {
+        fab.show();
+        fab.setEnabled(true);
+    }
+
+    public void hideFab() {
+        fab.setEnabled(false);
+        fab.hide();
+    }
 
 }

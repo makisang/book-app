@@ -10,15 +10,18 @@ import android.os.Parcelable;
 public class BookData implements Parcelable {
     public String name;
     public String path;
+    public long size;
 
-    public BookData(String name, String path) {
+    public BookData(String name, String path, long size) {
         this.name = name;
         this.path = path;
+        this.size = size;
     }
 
     private BookData(Parcel source) {
         name = source.readString();
         path = source.readString();
+        size = source.readLong();
     }
 
     @Override
@@ -30,6 +33,7 @@ public class BookData implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);
         dest.writeString(path);
+        dest.writeLong(size);
     }
 
     public static final Parcelable.Creator<BookData> CREATOR = new Parcelable.Creator<BookData>() {

@@ -13,10 +13,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShelfBooksModel implements ShelfBooksContract.Model {
+public class MainModel implements MainContract.Model {
     Context mContext;
 
-    public ShelfBooksModel(Context context) {
+    public MainModel(Context context) {
         this.mContext = context;
     }
 
@@ -30,7 +30,8 @@ public class ShelfBooksModel implements ShelfBooksContract.Model {
         while (cursor.moveToNext()) {
             String name = cursor.getString(cursor.getColumnIndex(RaiderDBContract.ShelfReader.COLUMN_NAME_NAME));
             String path = cursor.getString(cursor.getColumnIndex(RaiderDBContract.ShelfReader.COLUMN_NAME_PATH));
-            books.add(new BookData(name, path));
+            int size = cursor.getInt(cursor.getColumnIndex(RaiderDBContract.ShelfReader.COLUMN_NAME_SIZE));
+            books.add(new BookData(name, path, size));
         }
         cursor.close();
         db.close();

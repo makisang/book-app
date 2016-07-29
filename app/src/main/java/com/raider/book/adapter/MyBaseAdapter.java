@@ -5,6 +5,9 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 
+import com.raider.book.interf.MyItemClickListener;
+import com.raider.book.interf.MyItemLongClickListener;
+
 import java.util.ArrayList;
 import java.util.List;
 

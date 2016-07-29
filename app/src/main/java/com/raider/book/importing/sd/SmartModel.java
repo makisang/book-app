@@ -12,6 +12,8 @@ import com.raider.book.entity.BookData;
 import com.raider.book.utils.BookDBOpenHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class SmartModel implements SDImportContract.SmartModel {
 
@@ -27,6 +29,13 @@ public class SmartModel implements SDImportContract.SmartModel {
     @Override
     public ArrayList<BookData> traverse() {
         books = BookScanner.traverseInSD();
+        // sort by size descend.
+        Collections.sort(books, new Comparator<BookData>() {
+            @Override
+            public int compare(BookData bookData, BookData t1) {
+                return bookData.size > t1.size ? -1 : bookData.size == t1.size ? 0 : 1;
+            }
+        });
         return books;
     }
 

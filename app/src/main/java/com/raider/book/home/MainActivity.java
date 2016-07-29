@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -22,15 +23,9 @@ import android.view.View;
 
 import com.raider.book.R;
 import com.raider.book.entity.BookData;
-import com.raider.book.events.DeleteSelected;
-import com.raider.book.events.ExitSelectMode;
-import com.raider.book.events.InsertBooks;
-import com.raider.book.events.SelectAll;
 import com.raider.book.online.OnlineActivity;
 import com.raider.book.utils.ActivityUtils;
 import com.raider.book.utils.CustomAnim;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 
@@ -41,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private int activity_code;
     private static final int ONLINE = 1;
 
-    private String[] fragmentTags = {"ShelfBooksFragment"};
+    private String[] fragmentTags = {"MainFragment"};
 
     private CoordinatorLayout coordinatorLayout;
     private DrawerLayout drawerLayout;
@@ -50,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     private View visualLayout;
     private boolean mShowVisualToolbar = false;
     private Toolbar visualToolbar;
+    private FloatingActionButton fab;
+    private MainPresenter mPresenter;
 
     @SuppressWarnings("unchecked")
     public static void start(Activity activity) {
@@ -68,28 +65,40 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         getWindow().setAllowEnterTransitionOverlap(true);
-
-        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.my_coordinator);
-        visualLayout = findViewById(R.id.visual_layout);
-        visualToolbar = (Toolbar) findViewById(R.id.visual_toolbar);
-        toolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(toolbar);
-
+        initViews();
         // set up the DrawerLayout
         customDrawer();
         // init navigation content
         customNavigationView();
 
         // add mFragment to activity
-        ShelfBooksFragment mFragment = (ShelfBooksFragment) getSupportFragmentManager().findFragmentById(R.id.frame_container);
+        MainFragment mFragment = (MainFragment) getSupportFragmentManager().findFragmentById(R.id.frame_container);
         if (mFragment == null) {
-            mFragment = ShelfBooksFragment.newInstance();
+            mFragment = MainFragment.newInstance();
             ActivityUtils.addFragmentToActivity(getSupportFragmentManager(), mFragment, R.id.frame_container, fragmentTags[0]);
         }
 
         // create presenter
-        new ShelfBooksPresenter(mFragment, new ShelfBooksModel(this));
+        mPresenter = new MainPresenter(mFragment, new MainModel(this));
+    }
+
+
+    private void initViews() {
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.my_coordinator);
+        visualLayout = findViewById(R.id.visual_layout);
+        visualToolbar = (Toolbar) findViewById(R.id.visual_toolbar);
+        toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
+        fab = (FloatingActionButton) findViewById(R.id.my_fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // jump to SDImportActivity
+                mPresenter.toImportActivity();
+            }
+        });
     }
 
     /**
@@ -109,7 +118,8 @@ public class MainActivity extends AppCompatActivity {
                 visualToolbar.setNavigationOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        EventBus.getDefault().post(new ExitSelectMode());
+                        showFab();
+                        mPresenter.exitSelectMode();
                         hideVisualToolBar();
                     }
                 });
@@ -161,7 +171,6 @@ public class MainActivity extends AppCompatActivity {
         drawerToggle.syncState();
     }
 
-
     @SuppressWarnings("all")
     private void customNavigationView() {
         NavigationView navigation = (NavigationView) findViewById(R.id.navigation);
@@ -206,10 +215,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_delete:
-                EventBus.getDefault().post(new DeleteSelected());
+                mPresenter.deleteSelected();
                 return true;
             case R.id.action_select_all:
-                EventBus.getDefault().post(new SelectAll());
+                mPresenter.selectAll();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -225,8 +234,7 @@ public class MainActivity extends AppCompatActivity {
             String hint = String.format(getResources().getString(R.string.hint_add_book_success), addedBooks.size());
             Snackbar.make(coordinatorLayout, hint, Snackbar.LENGTH_SHORT).show();
 
-            /** {@link ShelfBooksPresenter#insertInFragment(InsertBooks)}  **/
-            EventBus.getDefault().post(new InsertBooks(addedBooks));
+            mPresenter.addBooks(addedBooks);
         }
     }
 
@@ -239,10 +247,40 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void changeMode(boolean enterSelectMode) {
+        if (enterSelectMode) {
+            hideFab();
+            showVisualToolBar();
+        } else {
+            showFab();
+            hideVisualToolBar();
+        }
+    }
+
+    public void enableFab() {
+        fab.setEnabled(true);
+    }
+
+    public void disableFab() {
+        fab.setEnabled(false);
+    }
+
+    public void showFab() {
+        fab.show();
+        fab.setEnabled(true);
+    }
+
+    public void hideFab() {
+        fab.setEnabled(false);
+        fab.hide();
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         drawerLayout.removeDrawerListener(drawerToggle);
+        mPresenter.onDestroy();
+        mPresenter = null;
     }
 
 }

@@ -9,7 +9,9 @@ import java.util.ArrayList;
 
 public class SDImportContract {
 
-    public interface SmartView extends RecyclerUI<SmartPresenter> {
+    public interface SmartView extends RecyclerUI<SDImportPresenter> {
+        SDImportActivity _getActivity();
+
         void _handleAddBookSuccess(ArrayList<BookData> addedBooks);
     }
 

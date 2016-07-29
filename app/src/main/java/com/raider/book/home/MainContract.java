@@ -6,23 +6,18 @@ import com.raider.book.entity.BookData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShelfBooksContract {
+public class MainContract {
 
-    public interface View extends RecyclerUI<ShelfBooksPresenter> {
+    public interface View extends RecyclerUI<MainPresenter> {
+        MainActivity _getActivity();
+
+        void _snackDeleteFailureInfo();
 
         void _showDeleteDialog();
 
         void _toReadActivity(BookData book);
 
-        void _changeMode(boolean enterSelectMode);
-
-        void _snackDeleteFailureInfo();
-
-        void _disableFab();
-
-        void _enableFab();
-
-        void _showFab();
+        void _toImportActivity(ArrayList<BookData> books);
     }
 
     public interface Model {

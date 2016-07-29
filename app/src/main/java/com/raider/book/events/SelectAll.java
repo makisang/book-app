@@ -2,11 +2,11 @@ package com.raider.book.events;
 
 import android.view.MenuItem;
 
-import com.raider.book.home.ShelfBooksPresenter;
+import com.raider.book.home.MainPresenter;
 
 /**
  * poster: {@link com.raider.book.home.MainActivity#onOptionsItemSelected(MenuItem)}
- * register: {@link ShelfBooksPresenter#selectAll(SelectAll)}
+ * register: {@link MainPresenter#selectAll(SelectAll)}
  */
 public class SelectAll {
 }

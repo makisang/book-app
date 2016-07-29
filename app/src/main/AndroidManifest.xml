@@ -34,8 +34,6 @@
             android:name=".online.OnlineActivity"
             android:parentActivityName=".home.MainActivity">
         </activity>
-        <activity android:name=".VPActivity">
-        </activity>
     </application>
 
 </manifest>

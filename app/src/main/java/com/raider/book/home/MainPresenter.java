@@ -4,40 +4,34 @@ package com.raider.book.home;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import com.raider.book.adapter.BookInShelfAdapter;
-import com.raider.book.adapter.MyItemClickListener;
-import com.raider.book.adapter.MyItemLongClickListener;
 import com.raider.book.RecyclerPresenter;
+import com.raider.book.adapter.BookInShelfAdapter;
+import com.raider.book.interf.MyItemClickListener;
+import com.raider.book.interf.MyItemLongClickListener;
 import com.raider.book.entity.BookData;
-import com.raider.book.events.DeleteSelected;
-import com.raider.book.events.ExitSelectMode;
-import com.raider.book.events.InsertBooks;
-import com.raider.book.events.SelectAll;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import rx.Observable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-public class ShelfBooksPresenter implements RecyclerPresenter, MyItemClickListener, MyItemLongClickListener {
-    ShelfBooksContract.View iView;
-    ShelfBooksContract.Model iModel;
+public class MainPresenter implements RecyclerPresenter, MyItemClickListener, MyItemLongClickListener {
+    MainActivity mActivity;
     BookInShelfAdapter mAdapter;
+    MainContract.View iView;
+    MainContract.Model iModel;
+    private Subscription subscription;
 
-    public ShelfBooksPresenter(ShelfBooksContract.View iView, ShelfBooksContract.Model iModel) {
-        this.iView = iView;
-        this.iModel = iModel;
-        EventBus.getDefault().register(this);
-        this.iView._setPresenter(this);
+    public MainPresenter(MainContract.View view, MainContract.Model model) {
+        iView = view;
+        iModel = model;
+        iView._setPresenter(this);
     }
 
     /**
@@ -45,9 +39,9 @@ public class ShelfBooksPresenter implements RecyclerPresenter, MyItemClickListen
      */
     @Override
     public void setAdapter(RecyclerView.Adapter adapter) {
-        this.mAdapter = (BookInShelfAdapter) adapter;
-        this.mAdapter.setItemClick(this);
-        this.mAdapter.setItemLongClick(this);
+        mAdapter = (BookInShelfAdapter) adapter;
+        mAdapter.setItemClick(this);
+        mAdapter.setItemLongClick(this);
     }
 
     public BookInShelfAdapter getAdapter() {
@@ -55,11 +49,11 @@ public class ShelfBooksPresenter implements RecyclerPresenter, MyItemClickListen
     }
 
     /**
-     * Show books in shelf when first enter app
+     * Show books in shelf.
      */
     public void loadBooks() {
         iView._showProgress();
-        Observable.just(true)
+        subscription = Observable.just(true)
                 .map(new Func1<Boolean, ArrayList<BookData>>() {
                     @Override
                     public ArrayList<BookData> call(Boolean aBoolean) {
@@ -76,7 +70,7 @@ public class ShelfBooksPresenter implements RecyclerPresenter, MyItemClickListen
                         }
                         addBooks(books);
                         iView._hideProgress();
-                        iView._showFab();
+                        mActivity.showFab();
                     }
                 });
     }
@@ -104,7 +98,7 @@ public class ShelfBooksPresenter implements RecyclerPresenter, MyItemClickListen
                             // remove data from adapter and update RecyclerView
                             mAdapter.removeSelected();
                             mAdapter.setMode(BookInShelfAdapter.NORMAL_MODE);
-                            iView._changeMode(false);
+                            mActivity.changeMode(false);
                         } else {
                             iView._snackDeleteFailureInfo();
                         }
@@ -117,7 +111,7 @@ public class ShelfBooksPresenter implements RecyclerPresenter, MyItemClickListen
      * and notify view refresh.
      */
     private void deleteNonExistentBooks() {
-        iView._disableFab();
+        mActivity.disableFab();
         Observable.just(mAdapter.getDataList())
                 .map(new Func1<List<BookData>, ArrayList<BookData>>() {
                     @Override
@@ -134,7 +128,7 @@ public class ShelfBooksPresenter implements RecyclerPresenter, MyItemClickListen
                             iView._snackDeleteFailureInfo();
                         }
                         deleteBooks(books);
-                        iView._enableFab();
+                        mActivity.enableFab();
                     }
                 });
     }
@@ -147,46 +141,32 @@ public class ShelfBooksPresenter implements RecyclerPresenter, MyItemClickListen
         }
     }
 
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void insertInFragment(InsertBooks insertBooks) {
-        addBooks(insertBooks.addedBooks);
-    }
-
     public void addBooks(ArrayList<BookData> books) {
         mAdapter.addItems(0, books);
         iView._scrollToPosition(0);
     }
 
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void selectAll(SelectAll selectAll) {
+    public void selectAll() {
         mAdapter.selectAll();
     }
 
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void deleteSelected(DeleteSelected deleteSelected) {
+    public void deleteSelected() {
         iView._showDeleteDialog();
     }
 
-    @SuppressWarnings("unused")
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void exitSelectMode(ExitSelectMode exitSelectMode) {
+    public void exitSelectMode() {
         mAdapter.setMode(BookInShelfAdapter.NORMAL_MODE);
         mAdapter.clearSelect();
+    }
+
+    public void toImportActivity() {
+        iView._toImportActivity((ArrayList<BookData>) mAdapter.getDataList());
     }
 
     @Override
     public void onViewCreated() {
         iView._setAdapter2Presenter();
-    }
-
-    @Override
-    public void onDestroy() {
-        iView = null;
-        iModel = null;
-        EventBus.getDefault().unregister(this);
+        mActivity = iView._getActivity();
     }
 
     @Override
@@ -209,7 +189,7 @@ public class ShelfBooksPresenter implements RecyclerPresenter, MyItemClickListen
     public void onItemLongClick(View view, int position) {
         if (!mAdapter.isInSelectMode()) {
             mAdapter.setMode(BookInShelfAdapter.SELECT_MODE);
-            iView._changeMode(true);
+            mActivity.changeMode(true);
         }
         reactOnPosition(position);
     }
@@ -223,8 +203,15 @@ public class ShelfBooksPresenter implements RecyclerPresenter, MyItemClickListen
         mAdapter.notifyItemChanged(position);
         if (mAdapter.isZeroSelected()) {
             mAdapter.setMode(BookInShelfAdapter.NORMAL_MODE);
-            iView._changeMode(false);
+            mActivity.changeMode(false);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        iView = null;
+        iModel = null;
+        if (subscription != null && !subscription.isUnsubscribed()) subscription.unsubscribe();
     }
 
 }
