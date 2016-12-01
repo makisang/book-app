@@ -10,7 +10,7 @@ import android.util.AttributeSet;
 public class TextFAB extends FloatingActionButton {
 
     private Paint mPaint;
-    private int TEXT_SIZE = 60;
+    private int TEXT_SIZE = 40;
     private int mNumber;
 
     public TextFAB(Context context) {
@@ -36,7 +36,7 @@ public class TextFAB extends FloatingActionButton {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawText(String.valueOf(mNumber), getWidth() / 2, getHeight() / 2 + TEXT_SIZE / 2, mPaint);
+        canvas.drawText(String.valueOf(mNumber), getMeasuredWidth() / 2, getMeasuredHeight() / 2 + TEXT_SIZE / 2, mPaint);
     }
 
     public void setNumber(int number) {

@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.raider.book.R;
-import com.raider.book.entity.BookData;
+import com.raider.book.dao.BookData;
 import com.raider.book.interf.MyCheckChangedListener;
 
 import java.util.ArrayList;

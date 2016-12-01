@@ -6,24 +6,32 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.Scroller;
 
+import com.raider.book.dao.BookData;
+
 import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class SlideBookView extends android.view.View implements SlideContract.View {
+public class SlideBookView extends android.view.View {
     private static final String TAG = "BookView";
+    private static final String CHARSET_GBK = "GBK";
+    private static final String CURRENT_START = "start";
+    private static final String CURRENT_END = "end";
 
     private static final int AUTO_SCROLL_DURATION = 500;
-    private static final int TEXT_SIZE_PX = 48;
+    private static int TEXT_SIZE_PX;
     private static final int LINE_SPACING_PX = 10;
 
+    private BookData mBookData;
     private Paint mPaint;
     private int mWidth;
     private int mHeight;
@@ -34,7 +42,6 @@ public class SlideBookView extends android.view.View implements SlideContract.Vi
     private int topPadding = 20;
     private int bottomPadding = 20;
 
-    private SlidePresenter mPresenter;
     private MappedByteBuffer mappedByteBuffer;
     private int prevPageSize;
     private int nextPageSize;
@@ -44,13 +51,20 @@ public class SlideBookView extends android.view.View implements SlideContract.Vi
     HashMap<String, Integer> indexMap = new HashMap<>();
 
     private Rect mRect;
-    float dx;
-    float oldX;
     private float mDeltaX;
-    private boolean inScroll;
     private Scroller mScroller;
-    private boolean mPageChanged;
+    private boolean aInScroll;
+    private boolean aPageChanged;
+    private boolean aForward;
+    private boolean aSlideRecovery;
     private GestureDetector mGestureDetector;
+
+    public SlideBookView(Context context, BookData bookData, AttributeSet attrs) {
+        this(context, attrs);
+        mBookData = bookData;
+        File file = new File(bookData.path);
+        maxLen = file.length();
+    }
 
     public SlideBookView(Context context) {
         this(context, null);
@@ -65,26 +79,11 @@ public class SlideBookView extends android.view.View implements SlideContract.Vi
         init();
     }
 
-    public void setBook(String path) {
-        if (mappedByteBuffer == null) {
-            File file = new File(path);
-            maxLen = file.length();
-            mPresenter.loadBook(path);
-        }
-    }
-
-    public void setBook(File file) {
-
-    }
-
     private void init() {
-        indexMap.put("current_start", 0);
-
         mScroller = new Scroller(getContext().getApplicationContext());
 
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setTextAlign(Paint.Align.LEFT);
-        mPaint.setTextSize(TEXT_SIZE_PX);
         mPaint.setColor(Color.BLACK);
         mPaint.setLetterSpacing(0.05f);
 
@@ -97,38 +96,77 @@ public class SlideBookView extends android.view.View implements SlideContract.Vi
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mWidth = MeasureSpec.getSize(widthMeasureSpec);
         mHeight = MeasureSpec.getSize(heightMeasureSpec);
+        TEXT_SIZE_PX = mWidth / 20;
+
+        mPaint.setTextSize(TEXT_SIZE_PX);
         maxLineSize = (mHeight - TEXT_SIZE_PX - topPadding - bottomPadding) / (TEXT_SIZE_PX + LINE_SPACING_PX) + 1;
+        // Load book data requires maxLineSize.
+        if (mappedByteBuffer == null) {
+            loadBook(mBookData);
+        }
+    }
+
+    private void loadBook(final BookData bookData) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                initMBB(bookData.path);
+            }
+        }).start();
+    }
+
+    public void initMBB(String path) {
+        File file = new File(path);
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "r");
+            // TODO expensive
+            mappedByteBuffer = raf.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+            indexMap.put(CURRENT_START, 0);
+            prevStrLines = getPrevPage();
+            currentStrLines = getFirstPage();
+            nextStrLines = getNextPage();
+            raf.close();
+            postInvalidate();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mScroller.forceFinished(true);
+        mScroller = null;
+        mappedByteBuffer = null;
+        prevStrLines = null;
+        currentStrLines = null;
+        nextStrLines = null;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        // book path not set yet
+        // Book path not set.
         if (mappedByteBuffer == null) return;
+
+        // After slideScroll(), update 3 strLines.
+        if (aPageChanged) {
+            updateStrLines(aForward);
+            aPageChanged = false;
+        }
 
         canvas.getClipBounds(mRect);
         canvas.translate(leftPadding, topPadding);
         canvas.getClipBounds(mRect);
-
         if (mDeltaX <= 0) {
-            //绘制当前页的文字
             if (currentStrLines != null) drawCurrentPage(canvas);
-            // 绘制下一页的文字
             if (nextStrLines != null) drawNextPage(canvas);
         } else {
-            // 让前一页的文字覆盖上来
             if (prevStrLines != null) {
                 drawPrevPage(canvas);
             }
-            //绘制当前页的文字
             if (currentStrLines != null) drawCurrentPage(canvas);
-        }
-
-        // 翻页了，更新数据
-        if (mPageChanged) {
-            updateStrLines(mDeltaX <= 0);
-            mPageChanged = false;
         }
     }
 
@@ -136,36 +174,97 @@ public class SlideBookView extends android.view.View implements SlideContract.Vi
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                oldX = event.getX();
-
-                if (inScroll) {
-                    mScroller.forceFinished(true);
-                } else {
-                    mDeltaX = 0;
-                }
-                break;
             case MotionEvent.ACTION_MOVE:
-                dx = event.getX() - oldX;
-                oldX = event.getX();
-                if (dx != 0) {
-                    mDeltaX += dx;
-                    invalidate();
-                }
-                break;
+                return mGestureDetector.onTouchEvent(event);
             case MotionEvent.ACTION_UP:
-                slideScroll(mDeltaX <= 0);
-                break;
+                // OnSingleTapUp and OnFling.
+                if (mGestureDetector.onTouchEvent(event))
+                    return true;
+                // Situation: scroll first, then pause for a while and then lift finger,
+                // OnSingleTapUp and OnFling will not catch this ACTION_UP.
+                // In this situation, mDeltaX = 0 means user tries to slide back in first page,
+                // so aForward is not mDeltaX <= 0.
+                aForward = mDeltaX < 0;
+                // Can't slide back in first page.
+                if (!aForward && prevStrLines == null)
+                    return true;
+                slideScroll(aForward);
         }
         return true;
     }
 
+    class MyGestureListener implements GestureDetector.OnGestureListener {
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            if (aInScroll) {
+                return false;
+            }
+            mDeltaX = 0;
+            return true;
+        }
+
+        @Override
+        public void onShowPress(MotionEvent e) {
+
+        }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            // Can't slide back in first page.
+            if (e.getX() < mWidth / 2 && prevStrLines == null)
+                return true;
+            // Use Scroller, slide left or right according to the tap position.
+            aForward = e.getX() > mWidth / 2;
+            slideScroll(aForward);
+            return true;
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            // Can't slide back in first page.
+            if (e2.getX() - e1.getX() > 0 && prevStrLines == null)
+                return true;
+
+            mDeltaX = e2.getX() - e1.getX();
+            invalidate();
+            return true;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            if ((e2.getX() - e1.getX() > 0 ^ velocityX > 0)) {
+                slideRecovery();
+                return true;
+            }
+            // Can't slide back in first page.
+            if (e2.getX() - e1.getX() > 0 && prevStrLines == null)
+                return true;
+            aForward = e2.getX() - e1.getX() < 0;
+            slideScroll(aForward);
+            return true;
+        }
+    }
+
     private void slideScroll(boolean slideForward) {
-        inScroll = true;
+        aInScroll = true;
         if (slideForward) {
             mScroller.startScroll((int) mDeltaX, 0, (int) -(mWidth + mDeltaX), 0, AUTO_SCROLL_DURATION);
         } else {
             mScroller.startScroll((int) mDeltaX, 0, (int) (mWidth - mDeltaX), 0, AUTO_SCROLL_DURATION);
         }
+        invalidate();
+    }
+
+    private void slideRecovery() {
+        aSlideRecovery = true;
+        aInScroll = true;
+        mScroller.startScroll((int) mDeltaX, 0, (int) (-mDeltaX), 0, AUTO_SCROLL_DURATION);
         invalidate();
     }
 
@@ -175,9 +274,13 @@ public class SlideBookView extends android.view.View implements SlideContract.Vi
         if (mScroller.computeScrollOffset()) {
             mDeltaX = mScroller.getCurrX();
             invalidate();
-        } else if (inScroll) {
-            inScroll = false;
-            mPageChanged = true;
+        } else if (aInScroll) {
+            aInScroll = false;
+            mDeltaX = 0;
+            // If the scroll is for recover to current page,
+            // then don't update strLines.
+            aPageChanged = !aSlideRecovery;
+            aSlideRecovery = false;
         }
     }
 
@@ -226,27 +329,25 @@ public class SlideBookView extends android.view.View implements SlideContract.Vi
         canvas.restore();
     }
 
-    @Override
-    public void setMBB(MappedByteBuffer mbb) {
-        this.mappedByteBuffer = mbb;
-        prevStrLines = getPrevPage();
-        currentStrLines = getCurrentPage();
-        nextStrLines = getNextPage();
-        invalidate();
-    }
-
     private void updateStrLines(boolean updateForward) {
-        Log.d("test", "update");
+        int currentStart = indexMap.get(CURRENT_START);
+        int currentEnd = indexMap.get(CURRENT_END);
+        int currentPageSize = currentEnd - currentStart + 1;
+
         if (updateForward) {
-            indexMap.put("current_start", indexMap.get("current_end") + 1);
-            indexMap.put("current_end", indexMap.get("current_end") + nextPageSize);
+            prevPageSize = currentPageSize;
+
+            indexMap.put(CURRENT_START, currentEnd + 1);
+            indexMap.put(CURRENT_END, currentEnd + nextPageSize);
 
             prevStrLines = currentStrLines;
             currentStrLines = nextStrLines;
             nextStrLines = getNextPage();
         } else {
-            indexMap.put("current_end", indexMap.get("current_start") - 1);
-            indexMap.put("current_start", indexMap.get("current_start") - prevPageSize);
+            nextPageSize = currentPageSize;
+
+            indexMap.put(CURRENT_START, currentStart - prevPageSize);
+            indexMap.put(CURRENT_END, currentStart - 1);
 
             nextStrLines = currentStrLines;
             currentStrLines = prevStrLines;
@@ -255,105 +356,157 @@ public class SlideBookView extends android.view.View implements SlideContract.Vi
     }
 
     private ArrayList<String> getPrevPage() {
+        int end = indexMap.get(CURRENT_START) - 1;
+        int pageSize = 0;
+
+        if (end <= 0) return null;
+
         ArrayList<String> strLines = new ArrayList<>();
-        int end = indexMap.get("current_start");
+        ArrayList<String> tempLines = new ArrayList<>();
+        ArrayList<String> currentLines = new ArrayList<>();
         String str_paragraph;
         int length;
         int measuredSize;
+        try {
+            while (tempLines.size() < maxLineSize) {
+                // No more data to read forward.
+                if (end <= 0) break;
 
-        while (strLines.size() < maxLineSize) {
-            byte[] bytes = readPrevParagraph(end);
-            try {
-                str_paragraph = new String(bytes, "GBK");
-
+                currentLines.clear();
+                byte[] bytes = readPrevParagraph(end);
+                str_paragraph = new String(bytes, CHARSET_GBK);
                 length = str_paragraph.length();
-                measuredSize = mPaint.breakText(str_paragraph, false, mWidth - 20, null);
-                while (measuredSize <= length) {
-                    if (strLines.size() == maxLineSize) break;
-                    String newLine = str_paragraph.substring(str_paragraph.length() - measuredSize);
-                    end -= newLine.getBytes("GBK").length;
-                    strLines.add(0, newLine);
 
-                    if (measuredSize == length) break;
-                    str_paragraph = str_paragraph.substring(0, str_paragraph.length() - measuredSize);
-                    length = str_paragraph.length();
-                    measuredSize = mPaint.breakText(str_paragraph, false, mWidth - 20, null);
-                }
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
-
-        prevPageSize = indexMap.get("current_start") - end;
-        return strLines;
-    }
-
-    private ArrayList<String> getCurrentPage() {
-        ArrayList<String> strLines = new ArrayList<>();
-        int end = indexMap.get("current_start");
-        String str_paragraph;
-        int length;
-        int measuredSize;
-        while (strLines.size() < maxLineSize) {
-            byte[] bytes = readNextParagraph(end);
-            try {
-                str_paragraph = new String(bytes, "GBK");
-
-                length = str_paragraph.length();
                 measuredSize = mPaint.breakText(str_paragraph, true, mWidth - 20, null);
-                // 当集合包含的行数没有超出限制时，将当前段落中的内容分为一行行的字符串加到集合中
                 while (measuredSize <= length) {
-                    if (strLines.size() >= maxLineSize) break;
-                    end += str_paragraph.substring(0, measuredSize).getBytes("GBK").length;
-                    strLines.add(str_paragraph.substring(0, measuredSize));
+                    String measuredStr = str_paragraph.substring(0, measuredSize);
+                    byte[] measuredBytes = measuredStr.getBytes(CHARSET_GBK);
+
+                    // In break process, '\r\n' may be broken into '\r' in the end of one line,
+                    // and '\n' in the next line, so deal with this situation.
+                    // Ignore single '\n'.
+                    if (!(measuredBytes.length == 1 && 0x0a == measuredBytes[0])) {
+                        // If ends with '\r', add '\n' in the end.
+                        if (0x0d == measuredBytes[measuredBytes.length - 1]) {
+                            measuredStr = measuredStr + new String(new byte[]{0x0a}, CHARSET_GBK);
+                        }
+                        end -= measuredStr.getBytes(CHARSET_GBK).length;
+                        currentLines.add(measuredStr);
+                    }
 
                     if (measuredSize == length) break;
                     str_paragraph = str_paragraph.substring(measuredSize);
-                    measuredSize = mPaint.breakText(str_paragraph, true, mWidth - leftPadding - rightPadding, null);
                     length = str_paragraph.length();
+                    measuredSize = mPaint.breakText(str_paragraph, true, mWidth - 20, null);
                 }
-
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                tempLines.addAll(0, currentLines);
             }
+
+            if (tempLines.size() > maxLineSize) {
+                for (int j = tempLines.size() - maxLineSize; j < tempLines.size(); j++) {
+                    strLines.add(tempLines.get(j));
+                }
+            } else {
+                strLines.addAll(tempLines);
+            }
+            // Calculate pageSize.
+            for (String line : strLines) {
+                pageSize += line.getBytes(CHARSET_GBK).length;
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
 
-        indexMap.put("current_end", end);
+        prevPageSize = pageSize;
         return strLines;
     }
 
     private ArrayList<String> getNextPage() {
-        Log.d("test", "getNext");
-        Log.d("test", "changed:" + mPageChanged);
+        int start = indexMap.get(CURRENT_END) + 1;
+        int pageSize = 0;
+
         ArrayList<String> strLines = new ArrayList<>();
-        int start = indexMap.get("current_end");
         String str_paragraph;
         int length;
         int measuredSize;
-        while (strLines.size() < maxLineSize) {
-            byte[] bytes = readNextParagraph(start);
-            try {
-                str_paragraph = new String(bytes, "GBK");
+        try {
+            while (strLines.size() < maxLineSize) {
+                byte[] bytes = readNextParagraph(start);
 
+                str_paragraph = new String(bytes, CHARSET_GBK);
                 length = str_paragraph.length();
                 measuredSize = mPaint.breakText(str_paragraph, true, mWidth - 20, null);
-                // 当集合包含的行数没有超出限制时，将当前段落中的内容分为一行行的字符串加到集合中
+
                 while (measuredSize <= length) {
                     if (strLines.size() >= maxLineSize) break;
-                    start += str_paragraph.substring(0, measuredSize).getBytes("GBK").length;
-                    strLines.add(str_paragraph.substring(0, measuredSize));
+                    String measuredStr = str_paragraph.substring(0, measuredSize);
+                    byte[] measuredBytes = measuredStr.getBytes(CHARSET_GBK);
+
+                    // In break process, '\r\n' may be broken into '\r' in the end of one line,
+                    // and '\n' in the next line, so deal with this situation.
+                    // TODO: deal with line break in form of '\r' or '\n'.
+                    if (!(measuredBytes.length == 1 && 0x0a == measuredBytes[0])) {
+                        // If ends with '\r', add '\n' in the end.
+                        if (0x0d == measuredBytes[measuredBytes.length - 1]) {
+                            measuredStr = measuredStr + new String(new byte[]{0x0a}, CHARSET_GBK);
+                        }
+                        pageSize += measuredStr.getBytes(CHARSET_GBK).length;
+                        // Update start index.
+                        start += measuredStr.getBytes(CHARSET_GBK).length;
+                        strLines.add(measuredStr);
+                    }
+                    // All the text remaining in this paragraph are shown in one line,
+                    // so read next paragraph.
+                    if (measuredSize == length) break;
+                    // Drop the text already in strLines, measure the remaining text.
+                    str_paragraph = str_paragraph.substring(measuredSize);
+                    measuredSize = mPaint.breakText(str_paragraph, true, mWidth - leftPadding - rightPadding, null);
+                    length = str_paragraph.length();
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        nextPageSize = pageSize;
+        return strLines;
+    }
+
+    private ArrayList<String> getFirstPage() {
+        int start = 0, pageSize = 0;
+
+        ArrayList<String> strLines = new ArrayList<>();
+        String str_paragraph;
+        int length;
+        int measuredSize;
+
+        try {
+            while (strLines.size() < maxLineSize) {
+                byte[] bytes = readNextParagraph(start);
+
+                str_paragraph = new String(bytes, CHARSET_GBK);
+                length = str_paragraph.length();
+                measuredSize = mPaint.breakText(str_paragraph, true, mWidth - 20, null);
+
+                while (measuredSize <= length) {
+                    if (strLines.size() >= maxLineSize) break;
+                    String measuredStr = str_paragraph.substring(0, measuredSize);
+                    pageSize += measuredStr.getBytes(CHARSET_GBK).length;
+                    start += measuredStr.getBytes(CHARSET_GBK).length;
+                    strLines.add(measuredStr);
 
                     if (measuredSize == length) break;
                     str_paragraph = str_paragraph.substring(measuredSize);
                     measuredSize = mPaint.breakText(str_paragraph, true, mWidth - leftPadding - rightPadding, null);
                     length = str_paragraph.length();
                 }
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
             }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
 
-        nextPageSize = start - indexMap.get("current_end");
+        indexMap.put(CURRENT_START, 0);
+        indexMap.put(CURRENT_END, pageSize - 1);
         return strLines;
     }
 
@@ -363,82 +516,46 @@ public class SlideBookView extends android.view.View implements SlideContract.Vi
      * @param start 段落起始位置在mappedByteBuffer中的索引
      * @return 段落字符串的byte数组
      */
-    private byte[] readNextParagraph(int start) {
-        int end = start;
+    private byte[] readNextParagraph(int start) throws UnsupportedEncodingException {
+        int length = 0;
 
-        // 判断段落结束标记
         for (int i = 0; i < maxLen - start; i++) {
-            if (0x0a == mappedByteBuffer.get(start + i)) {
-                // Note: 这里需要跳过这个结束标记，不然跳出之后再读下一段还是读到的这个标记
-                end += i + 1;
+            // Line break: \r\n
+            if ((0x0d == mappedByteBuffer.get(start + i) && 0x0a == mappedByteBuffer.get(start + i + 1))) {
+                length = i + 2;
                 break;
             }
         }
 
         mappedByteBuffer.mark();
         mappedByteBuffer.position(start);
-        byte[] bytes = new byte[end - start];
-        mappedByteBuffer.get(bytes, 0, end - start);
+        byte[] bytes = new byte[length];
+        mappedByteBuffer.get(bytes, 0, length);
         mappedByteBuffer.reset();   // 将mappedByteBuffer还原到mark的位置，即position重新变为0
 
         return bytes;
     }
 
-    private byte[] readPrevParagraph(int end) {
-        int start = end;
+    private byte[] readPrevParagraph(int end) throws UnsupportedEncodingException {
+        int length = 0;
 
-        for (int i = 0; i < end; i++) {
-            if (0x0a == mappedByteBuffer.get(end - i)) {
-                start -= i + 1;
+        for (int i = 1; i < end; i++) {
+            // Line break: \r\n
+            if (0x0a == mappedByteBuffer.get(end - i) && 0x0d == mappedByteBuffer.get(end - i - 1)) {
+                length = i;
                 break;
             }
+            // There is no Line break ahead, so its the very beginning of file.
+            length = end + 1;
         }
 
         mappedByteBuffer.mark();
-        mappedByteBuffer.position(start);
-        byte[] bytes = new byte[end - start];
-        mappedByteBuffer.get(bytes, 0, end - start);
+        mappedByteBuffer.position(end - length + 1);
+        byte[] bytes = new byte[length];
+        mappedByteBuffer.get(bytes, 0, length);
         mappedByteBuffer.reset();
 
         return bytes;
-    }
-
-    @Override
-    public void _setPresenter(SlidePresenter presenter) {
-        mPresenter = presenter;
-    }
-
-    class MyGestureListener implements GestureDetector.OnGestureListener {
-
-        @Override
-        public boolean onDown(MotionEvent e) {
-            return false;
-        }
-
-        @Override
-        public void onShowPress(MotionEvent e) {
-
-        }
-
-        @Override
-        public boolean onSingleTapUp(MotionEvent e) {
-            return false;
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            return true;
-        }
-
-        @Override
-        public void onLongPress(MotionEvent e) {
-
-        }
-
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            return false;
-        }
     }
 
 }

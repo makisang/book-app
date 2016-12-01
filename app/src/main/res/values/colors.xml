@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="bg_light_yellow">#FAFAFB</color>
+
     <color name="touch_effect">#9ccc</color>
 
     <color name="card_fg_unpressed">#25FFF3E0</color>
@@ -19,4 +21,5 @@
     <color name="mid_grey">#9E9E9E</color>
 
     <color name="mid_lime">#CDDC39</color>
+
 </resources>

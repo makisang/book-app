@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/third_party"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true">
+
+    <ImageView
+        android:id="@+id/wechat"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_margin="@dimen/common_margin"
+        android:src="@drawable/vector_wechat"/>
+
+    <ImageView
+        android:id="@+id/weibo"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_margin="@dimen/common_margin"
+        android:layout_toEndOf="@id/wechat"
+        android:src="@drawable/vector_weibo"/>
+
+    <ImageView
+        android:id="@+id/whatsapp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_margin="@dimen/common_margin"
+        android:layout_toEndOf="@id/weibo"
+        android:src="@drawable/vector_whatsapp"/>
+
+</RelativeLayout>

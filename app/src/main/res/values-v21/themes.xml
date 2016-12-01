@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="RaiderBook" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/light_blue_colorPrimary</item>
+        <item name="colorPrimaryDark">@color/light_blue_colorPrimaryDark</item>
+        <item name="colorAccent">@color/teal_accent_pink</item>
+        <item name="toolbarStyle">@style/Widget.AppCompat.Toolbar</item>
+        <item name="android:windowBackground">@color/light_grey</item>
+        <!--SDK >= 21-->
+        <item name="android:statusBarColor">@color/light_blue_colorPrimaryDark</item>
+        <item name="android:popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+        <item name="android:windowContentTransitions">true</item>
+    </style>
+
+    <style name="RaiderBook.Drawer">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+</resources>

@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.raider.book.R;
-import com.raider.book.entity.Journal;
+import com.raider.book.dao.Journal;
 
 import java.util.List;
 

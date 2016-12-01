@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/darker_gray"
+    android:elevation="@dimen/elevation_fab_pressed">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:id="@+id/sd_import"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/common_padding"
+            android:paddingTop="@dimen/common_padding">
+
+            <ImageView
+                android:id="@+id/iv_sd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/common_margin"
+                android:layout_marginStart="@dimen/small_margin"
+                android:contentDescription="@string/sd_import"
+                android:scaleType="centerInside"
+                android:src="@drawable/vector_storage_white"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@id/iv_sd"
+                android:text="@string/sd_import"
+                android:textColor="#ffffff"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/bt_import"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/common_padding"
+            android:paddingTop="@dimen/common_padding">
+
+            <ImageView
+                android:id="@+id/iv_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/common_margin"
+                android:layout_marginStart="@dimen/small_margin"
+                android:contentDescription="@string/bt_import"
+                android:src="@drawable/vector_bluetooth_white"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@id/iv_bt"
+                android:text="@string/bt_import"
+                android:textColor="#ffffff"/>
+        </RelativeLayout>
+    </LinearLayout>
+</FrameLayout>

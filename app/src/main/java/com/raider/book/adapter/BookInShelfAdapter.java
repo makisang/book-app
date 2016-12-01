@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.raider.book.R;
-import com.raider.book.entity.BookData;
+import com.raider.book.dao.BookData;
 
 import java.util.ArrayList;
 import java.util.List;

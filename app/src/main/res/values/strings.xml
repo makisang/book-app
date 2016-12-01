@@ -3,6 +3,9 @@
 
     <string name="hello_world">Hello world!</string>
 
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
     <!-- shelfActivity -->
     <string name="toolbar_shelf">Shelf</string>
     <string name="drawer_open">open drawer</string>
@@ -10,6 +13,8 @@
     <string name="delete_failure">delete non-existent books failed</string>
     <string name="delete_message">remove from shelf</string>
     <string name="delete_file">delete file concurrently</string>
+    <string name="sd_import">import from SD</string>
+    <string name="bt_import">import from bluetooth</string>
 
     <!-- SDImportActivity -->
     <string name="toolbar_import">ImportBook</string>
@@ -20,7 +25,23 @@
     <!-- OnlineActivity -->
     <string name="online">Online</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- SectionActivity -->
+    <string name="toolbar_section">Section</string>
+    <string name="top_image">Image</string>
+
+    <!--LogonActivity-->
+    <string name="input_username">Username</string>
+    <string name="input_pwd">Your password</string>
+    <string name="logon">Logon</string>
+    <string name="third_party_logon">Third party logon</string>
+    <string name="register_hint">Go to register page</string>
+    <string name="register">Register</string>
+    <string name="register_loss">Please type in all register messages.</string>
+    <string name="logon_loss">Please type in all logon messages.</string>
+    <string name="register_success">Register success!</string>
+    <string name="username_repeat">This username has been registered.</string>
+    <string name="confirm">Confirm</string>
+    <string name="username_pwd_mismatch">Wrong password.</string>
+    <string name="user_not_found">User not found.</string>
 
 </resources>

@@ -6,23 +6,10 @@
         <item name="colorPrimaryDark">@color/light_blue_colorPrimaryDark</item>
         <item name="colorAccent">@color/teal_accent_pink</item>
         <item name="toolbarStyle">@style/Widget.AppCompat.Toolbar</item>
-        <item name="android:statusBarColor">@color/light_blue_colorPrimaryDark</item>
         <item name="android:windowBackground">@color/light_grey</item>
-        <item name="android:windowContentTransitions">true</item>
     </style>
 
     <style name="RaiderBook.Drawer">
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <!-- activity transition -->
-        <item name="android:windowEnterTransition">@transition/main_enter</item>
-        <item name="android:windowExitTransition">@transition/main_exit</item>
-    </style>
-
-    <style name="RaiderBook.Import">
-        <!-- activity transition -->
-        <item name="android:windowEnterTransition">@transition/import_enter</item>
-        <item name="android:windowExitTransition">@transition/import_exit</item>
     </style>
 
 </resources>

@@ -15,10 +15,9 @@
             android:id="@+id/my_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?android:attr/actionBarSize"
-            android:background="?android:attr/colorPrimary"
+            android:background="?attr/colorPrimary"
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
             app:navigationIcon="@drawable/ic_menu_white"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             app:title="@string/toolbar_shelf"
             app:titleTextColor="@android:color/white"/>
 
@@ -35,10 +34,9 @@
             android:layout_width="match_parent"
             android:layout_height="?android:attr/actionBarSize"
             android:background="@color/touch_effect"
-            android:elevation="@dimen/toolbar_elevation"
+            android:elevation="@dimen/elevation_toolbar"
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-            app:navigationIcon="@drawable/ic_arrow_back_black"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+            app:navigationIcon="@drawable/ic_arrow_back_black"/>
 
     </android.support.design.widget.AppBarLayout>
 
@@ -48,14 +46,30 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
+    <FrameLayout
+        android:id="@+id/import_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ffffff"
+        android:clickable="true"
+        android:visibility="gone"/>
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/my_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/common_margin"
         android:src="@drawable/ic_add_white"
         android:visibility="gone"
         app:layout_behavior="com.raider.book.custom.CustomFabBehavior"/>
+
+    <include
+        android:id="@+id/import_layout"
+        layout="@layout/layout_import_menu"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/common_margin"/>
 
 </android.support.design.widget.CoordinatorLayout>

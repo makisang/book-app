@@ -1,14 +1,30 @@
 <resources>
-    <!-- Default screen margins, per the Android Design guidelines. -->
+    <!-- margin and padding -->
     <dimen name="spacing_nano">2dp</dimen>
     <dimen name="spacing_mid">4dp</dimen>
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
-
+    <dimen name="large_padding">32dp</dimen>
+    <dimen name="large_margin">32dp</dimen>
     <dimen name="common_padding">16dp</dimen>
     <dimen name="common_margin">16dp</dimen>
+    <dimen name="small_margin">10dp</dimen>
+    <dimen name="small_padding">10dp</dimen>
 
-    <dimen name="toolbar_elevation">4dp</dimen>
+    <!-- component size -->
+    <dimen name="fab_size">56dp</dimen>
+
+    <!-- elevation -->
+    <dimen name="elevation_btn_normal">2dp</dimen>
+    <dimen name="elevation_btn_pressed">8dp</dimen>
+    <dimen name="elevation_toolbar">4dp</dimen>
+    <dimen name="elevation_fab_rest">6dp</dimen>
+    <dimen name="elevation_fab_pressed">12dp</dimen>
+
+    <!-- PopupWindow size -->
+    <dimen name="popup_width">200dp</dimen>
+    <dimen name="popup_height">300dp</dimen>
+
     <dimen name="shelf_book_height">100dp</dimen>
     <dimen name="shelf_book_card_corner">2dp</dimen>
 </resources>

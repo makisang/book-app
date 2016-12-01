@@ -35,8 +35,8 @@
 
     <com.raider.book.custom.TextFAB
         android:id="@+id/my_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/fab_size"
+        android:layout_height="@dimen/fab_size"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/common_margin"
         android:visibility="gone"/>
