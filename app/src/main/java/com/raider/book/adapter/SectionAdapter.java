@@ -25,7 +25,7 @@ public class SectionAdapter extends MyBaseAdapter<String, SectionAdapter.MyViewH
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        holder.sectionName.setText(dataList.get(position));
+        holder.sectionName.setText(mDataList.get(position));
     }
 
     static class MyViewHolder extends RecyclerView.ViewHolder {

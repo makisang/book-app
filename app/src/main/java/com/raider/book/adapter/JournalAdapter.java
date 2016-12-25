@@ -2,54 +2,61 @@ package com.raider.book.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
 import com.raider.book.R;
-import com.raider.book.dao.Journal;
+import com.raider.book.dao.NetBook;
 
 import java.util.List;
 
-public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.MyViewHolder> {
-    Context mContext;
-    List<Journal> journals;
+public class JournalAdapter extends MyBaseAdapter<NetBook, RecyclerView.ViewHolder> {
 
-    public JournalAdapter(Context context, @NonNull List<Journal> list) {
-        this.mContext = context;
-        this.journals = list;
-    }
-
-    public void addItems(List<Journal> addedList) {
-        this.journals.addAll(0, addedList);
-//        notifyItemRangeInserted(0, addedList.size());
-        notifyDataSetChanged();
+    public JournalAdapter(Context context, @NonNull List<NetBook> list) {
+        super(context, list);
     }
 
     @Override
-    public int getItemCount() {
-        return journals == null ? 0 : journals.size();
-    }
-
-    @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View inflateView = LayoutInflater.from(mContext).inflate(R.layout.item_journal, parent, false);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View inflateView = LayoutInflater.from(mContext).inflate(R.layout.item_net_book, parent, false);
         return new MyViewHolder(inflateView);
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
-        holder.title.setText(journals.get(position).title);
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        final MyViewHolder viewHolder = (MyViewHolder) holder;
+        viewHolder.title.setText(mDataList.get(position).title);
+        viewHolder.author.setText(mDataList.get(position).author);
+        viewHolder.description.setText(mDataList.get(position).description);
+        ImageLoader.getInstance().displayImage(mDataList.get(position).cover_url, viewHolder.cover);
+        viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mItemClickListener.onItemClick(viewHolder.cardView, viewHolder.getAdapterPosition());
+            }
+        });
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
+    private class MyViewHolder extends RecyclerView.ViewHolder {
+        CardView cardView;
         TextView title;
+        TextView author;
+        TextView description;
+        ImageView cover;
 
-        public MyViewHolder(View itemView) {
+        private MyViewHolder(final View itemView) {
             super(itemView);
+            cardView = (CardView) itemView.findViewById(R.id.card_view);
             title = (TextView) itemView.findViewById(R.id.title);
+            author = (TextView) itemView.findViewById(R.id.author);
+            description = (TextView) itemView.findViewById(R.id.description);
+            cover = (ImageView) itemView.findViewById(R.id.cover);
         }
 
     }

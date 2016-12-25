@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.raider.book.R;
 import com.raider.book.app.BookApplication;
 import com.raider.book.dao.BookData;
+import com.raider.book.dao.NetBook;
 import com.raider.book.fragment.ReadFragment;
 import com.raider.book.utils.Utils;
 import com.squareup.leakcanary.RefWatcher;
@@ -15,6 +16,7 @@ import com.squareup.leakcanary.RefWatcher;
 public class ReadActivity extends AppCompatActivity {
     private static final String EXTRA_BOOK_DATA = "intent_book_data";
     public static final String BUNDLE_BOOK_DATA = "bundle_book_data";
+    private static final String EXTRA_NET_BOOK = "intent_net_book";
 
     private String[] fragmentTags = {"ReadFragment"};
     private ReadFragment mFragment;
@@ -23,6 +25,12 @@ public class ReadActivity extends AppCompatActivity {
     public static void start(Activity activity, BookData bookData) {
         Intent intent = new Intent(activity, ReadActivity.class);
         intent.putExtra(EXTRA_BOOK_DATA, bookData);
+        activity.startActivity(intent);
+    }
+
+    public static void start(Activity activity, NetBook netBook) {
+        Intent intent = new Intent(activity, ReadActivity.class);
+        intent.putExtra(EXTRA_NET_BOOK, netBook);
         activity.startActivity(intent);
     }
 

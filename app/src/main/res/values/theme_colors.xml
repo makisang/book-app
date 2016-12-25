@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- teal -->
+    <color name="teal_colorPrimary">#009688</color>
+    <color name="teal_colorPrimaryDark">#00695C</color>
+    <color name="teal_accent_pink">#ff4081</color>
+
+    <!-- light blue -->
+    <color name="light_blue_colorPrimary">#03A9F4</color>
+    <color name="light_blue_colorPrimaryDark">#0277BD</color>
+    <color name="light_blue_accent_pink">#ff4081</color>
+</resources>

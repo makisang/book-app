@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">阿米狗</string>
+
+    <!--菜单-->
+    <string name="online_books">在线书库</string>
+    <string name="action_import">导书</string>
+    <string name="action_add">添加</string>
+    <string name="action_delete">删除</string>
+    <string name="action_select_all">全部选择</string>
+    <string name="action_deselect_all">全部取消</string>
+
     <!-- shelfActivity -->
     <string name="toolbar_shelf">书架</string>
     <string name="drawer_open">打开侧滑</string>
@@ -18,6 +28,8 @@
 
     <!-- OnlineActivity -->
     <string name="online">在线书库</string>
+    <string name="promote">推荐</string>
+    <string name="classify">分类</string>
 
     <!-- SectionActivity -->
     <string name="toolbar_section">章节</string>
@@ -37,4 +49,9 @@
     <string name="logon_loss">请输入完整登录信息</string>
     <string name="username_pwd_mismatch">密码不正确</string>
     <string name="user_not_found">用户不存在</string>
+
+    <!--general-->
+    <string name="error">app出了点小错误哦</string>
+    <string name="network_connect_error">网络开小差了</string>
+
 </resources>

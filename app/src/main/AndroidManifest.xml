@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.raider.book">
+    package="com.raider.book">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!-- LeanCloud -->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:name=".app.BookApplication"
@@ -21,42 +21,41 @@
         See https://g.co/AppIndexing/AndroidStudio for more information.-->
         <meta-data
             android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
+            android:value="@integer/google_play_services_version" />
 
         <activity
             android:name=".activity.SplashActivity"
-            android:label="@string/app_name"/>
+            android:label="@string/app_name" />
 
         <activity
             android:name=".activity.LogonActivity"
             android:windowSoftInputMode="stateHidden|stateAlwaysVisible">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
         </activity>
 
         <activity
             android:name=".activity.MainActivity"
             android:theme="@style/RaiderBook.Drawer">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <activity
             android:name=".activity.SDImportActivity"
-            android:parentActivityName=".activity.MainActivity"/>
+            android:parentActivityName=".activity.MainActivity" />
 
-        <activity
-            android:name=".activity.ReadActivity"/>
+        <activity android:name=".activity.ReadActivity" />
 
         <activity
             android:name=".activity.OnlineActivity"
-            android:parentActivityName=".activity.MainActivity"/>
+            android:parentActivityName=".activity.MainActivity" />
 
         <activity
             android:name=".activity.SectionActivity"
-            android:theme="@style/RaiderBook.Drawer"/>
+            android:theme="@style/RaiderBook.Drawer" />
 
     </application>
 

@@ -1,10 +1,16 @@
 <resources>
+    <string name="hello_world">Hello world!</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
     <string name="app_name">Book</string>
 
-    <string name="hello_world">Hello world!</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!--menu-->
+    <string name="online_books">Online books</string>
+    <string name="action_import">Import books</string>
+    <string name="action_add">add</string>
+    <string name="action_delete">delete</string>
+    <string name="action_select_all">select add</string>
+    <string name="action_deselect_all">deselect all</string>
 
     <!-- shelfActivity -->
     <string name="toolbar_shelf">Shelf</string>
@@ -24,6 +30,8 @@
 
     <!-- OnlineActivity -->
     <string name="online">Online</string>
+    <string name="promote">Promote</string>
+    <string name="classify">Classify</string>
 
     <!-- SectionActivity -->
     <string name="toolbar_section">Section</string>
@@ -43,5 +51,9 @@
     <string name="confirm">Confirm</string>
     <string name="username_pwd_mismatch">Wrong password.</string>
     <string name="user_not_found">User not found.</string>
+
+    <!--general-->
+    <string name="error">There is a little error in our app~</string>
+    <string name="network_connect_error">Net connect failed~</string>
 
 </resources>

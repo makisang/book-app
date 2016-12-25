@@ -12,7 +12,7 @@
         android:layout_marginStart="@dimen/common_margin"
         android:layout_marginTop="@dimen/common_margin"
         android:text="@string/delete_message"
-        android:textSize="@dimen/text_size_mid"/>
+        android:textSize="@dimen/text_size_20"/>
 
     <android.support.v7.widget.AppCompatCheckBox
         android:id="@+id/dialog_cb"
