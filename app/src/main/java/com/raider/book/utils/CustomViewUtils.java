@@ -5,6 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.util.Property;
 import android.view.View;
@@ -20,22 +22,22 @@ public class CustomViewUtils {
         int shortAnimTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
         progressBar.setAlpha(0f);
         progressBar.setVisibility(View.VISIBLE);
-        progressBar.animate().alpha(1f).setDuration(shortAnimTime).setListener(null);
+        progressBar.animate().alpha(1f).setDuration(shortAnimTime).setListener(null).start();
 
         view.animate().alpha(0f).setDuration(shortAnimTime).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                view.setVisibility(View.GONE);
+//                view.setVisibility(View.GONE);
             }
-        });
+        }).start();
     }
 
     public static void hideProgress(Context context, final View view, final ProgressBar progressBar) {
         int shortAnimTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
         view.setAlpha(0f);
         view.setVisibility(View.VISIBLE);
-        view.animate().alpha(1f).setDuration(shortAnimTime).setListener(null);
+        view.animate().alpha(1f).setDuration(shortAnimTime).setListener(null).start();
 
         progressBar.animate().alpha(0f).setDuration(shortAnimTime).setListener(new AnimatorListenerAdapter() {
             @Override
@@ -43,9 +45,10 @@ public class CustomViewUtils {
                 super.onAnimationEnd(animation);
                 progressBar.setVisibility(View.GONE);
             }
-        });
+        }).start();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public static void showWithRippleEffect(View view, AnimatorListenerAdapter listenerAdapter) {
         int cx = (view.getLeft() + view.getRight()) / 2;
         int cy = (view.getTop() + view.getBottom()) / 2;
@@ -57,6 +60,7 @@ public class CustomViewUtils {
         animator.start();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public static void hideWithRippleEffect(View view, AnimatorListenerAdapter listenerAdapter) {
         int cx = (view.getLeft() + view.getRight()) / 2;
         int cy = (view.getTop() + view.getBottom()) / 2;

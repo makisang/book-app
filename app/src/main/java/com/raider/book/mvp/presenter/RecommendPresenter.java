@@ -1,31 +1,27 @@
 package com.raider.book.mvp.presenter;
 
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
 
 import com.raider.book.base.RecyclerPresenter;
 import com.raider.book.adapter.JournalAdapter;
 import com.raider.book.dao.HttpResult;
 import com.raider.book.dao.NetBook;
-import com.raider.book.interf.MyItemClickListener;
 import com.raider.book.mvp.contract.OnlineContract;
 
-import java.util.List;
 
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-public class JournalPresenter implements RecyclerPresenter {
+public class RecommendPresenter implements RecyclerPresenter {
 
-    JournalAdapter mAdapter;
-    OnlineContract.JournalView iView;
-    OnlineContract.JournalModel iModel;
+    private JournalAdapter mAdapter;
+    private OnlineContract.RecommendView iView;
+    private OnlineContract.RecommendModel iModel;
     private Subscription journalSub;
-    private List<NetBook> netBooks;
 
-    public JournalPresenter(OnlineContract.JournalView view, OnlineContract.JournalModel model) {
+    public RecommendPresenter(OnlineContract.RecommendView view, OnlineContract.RecommendModel model) {
         iView = view;
         iModel = model;
         iView._setPresenter(this);
@@ -34,13 +30,6 @@ public class JournalPresenter implements RecyclerPresenter {
     @Override
     public void setAdapter(RecyclerView.Adapter adapter) {
         mAdapter = (JournalAdapter) adapter;
-        mAdapter.setItemClick(new MyItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                NetBook netBook = netBooks.get(position);
-
-            }
-        });
     }
 
     @Override
@@ -57,8 +46,7 @@ public class JournalPresenter implements RecyclerPresenter {
                     @Override
                     public void call(HttpResult<NetBook> result) {
                         iView._setAdapter2Presenter();
-                        netBooks = result.dataList;
-                        mAdapter.addItems(0, netBooks);
+                        mAdapter.addItems(0, result.dataList);
                     }
                 }, errorHandler);
     }

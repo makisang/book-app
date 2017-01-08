@@ -15,9 +15,9 @@ import android.support.v7.widget.Toolbar;
 import com.raider.book.R;
 import com.raider.book.adapter.MyPagerAdapter;
 import com.raider.book.fragment.CollectionFragment;
-import com.raider.book.fragment.JournalFragment;
-import com.raider.book.mvp.model.JournalModel;
-import com.raider.book.mvp.presenter.JournalPresenter;
+import com.raider.book.fragment.RecommendFragment;
+import com.raider.book.mvp.model.RecommendModel;
+import com.raider.book.mvp.presenter.RecommendPresenter;
 
 public class OnlineActivity extends AppCompatActivity {
 
@@ -46,13 +46,13 @@ public class OnlineActivity extends AppCompatActivity {
     }
 
     private void initVPAndTab() {
-        JournalFragment journalFragment = JournalFragment.newInstance();
-        new JournalPresenter(journalFragment, new JournalModel(this.getApplicationContext()));
+        RecommendFragment recommendFragment = RecommendFragment.newInstance();
+        new RecommendPresenter(recommendFragment, new RecommendModel(this.getApplicationContext()));
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
 
         MyPagerAdapter pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
-        pagerAdapter.addFragment(journalFragment, getString(R.string.promote));
+        pagerAdapter.addFragment(recommendFragment, getString(R.string.promote));
         pagerAdapter.addFragment(CollectionFragment.newInstance(), getString(R.string.classify));
         viewPager.setAdapter(pagerAdapter);
 

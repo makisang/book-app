@@ -14,7 +14,11 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.raider.book.R;
 import com.raider.book.dao.NetBook;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.List;
+
+import static com.raider.book.contract.URLCollection.QING_STOR_IMG_DIC;
 
 public class JournalAdapter extends MyBaseAdapter<NetBook, RecyclerView.ViewHolder> {
 
@@ -34,7 +38,12 @@ public class JournalAdapter extends MyBaseAdapter<NetBook, RecyclerView.ViewHold
         viewHolder.title.setText(mDataList.get(position).title);
         viewHolder.author.setText(mDataList.get(position).author);
         viewHolder.description.setText(mDataList.get(position).description);
-        ImageLoader.getInstance().displayImage(mDataList.get(position).cover_url, viewHolder.cover);
+        try {
+            String decode = URLDecoder.decode(QING_STOR_IMG_DIC + mDataList.get(position).title + ".jpg", "utf-8");
+            ImageLoader.getInstance().displayImage(decode, viewHolder.cover);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         viewHolder.cardView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

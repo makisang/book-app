@@ -3,23 +3,21 @@ package com.raider.book.dao;
 
 import android.os.Parcel;
 
-public class NetBook implements BookData {
-    public int id;
-    public String description;
-    public String title;
-    public String author;
-    public String length;
-    public String path;
+public class NetBook extends Book {
+
     public String cover_url;
     public String catalog_url;
     public String home_url;
+
+    public NetBook() {
+    }
 
     private NetBook(Parcel in) {
         id = in.readInt();
         description = in.readString();
         title = in.readString();
         author = in.readString();
-        length = in.readString();
+        length = in.readLong();
         path = in.readString();
         cover_url = in.readString();
         catalog_url = in.readString();
@@ -49,7 +47,7 @@ public class NetBook implements BookData {
         dest.writeString(description);
         dest.writeString(title);
         dest.writeString(author);
-        dest.writeString(length);
+        dest.writeLong(length);
         dest.writeString(path);
         dest.writeString(cover_url);
         dest.writeString(catalog_url);

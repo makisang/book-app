@@ -11,11 +11,11 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
-        android:name=".app.BookApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/RaiderBook">
+        android:theme="@style/RaiderBook"
+        android:name=".app.BookApplication">
 
         <!--ATTENTION: This was auto-generated to add Google Play services to your project for App Indexing.
         See https://g.co/AppIndexing/AndroidStudio for more information.-->
@@ -24,8 +24,8 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name=".activity.SplashActivity"
-            android:label="@string/app_name" />
+            android:label="@string/app_name"
+            android:name=".activity.SplashActivity" />
 
         <activity
             android:name=".activity.LogonActivity"
@@ -34,8 +34,8 @@
         </activity>
 
         <activity
-            android:name=".activity.MainActivity"
-            android:theme="@style/RaiderBook.Drawer">
+            android:theme="@style/RaiderBook.Drawer"
+            android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -44,18 +44,18 @@
         </activity>
 
         <activity
-            android:name=".activity.SDImportActivity"
-            android:parentActivityName=".activity.MainActivity" />
+            android:parentActivityName=".activity.MainActivity"
+            android:name=".activity.SDImportActivity" />
 
         <activity android:name=".activity.ReadActivity" />
 
         <activity
-            android:name=".activity.OnlineActivity"
-            android:parentActivityName=".activity.MainActivity" />
+            android:parentActivityName=".activity.MainActivity"
+            android:name=".activity.OnlineActivity" />
 
         <activity
-            android:name=".activity.SectionActivity"
-            android:theme="@style/RaiderBook.Drawer" />
+            android:theme="@style/RaiderBook.Drawer"
+            android:name=".activity.SectionActivity" />
 
     </application>
 

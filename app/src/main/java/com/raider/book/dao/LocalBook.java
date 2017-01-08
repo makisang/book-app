@@ -3,21 +3,25 @@ package com.raider.book.dao;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class LocalBook implements BookData {
-    public String name;
-    public String path;
-    public long size;
+/**
+ * Created by wkq on 2016/4/14.
+ * represent book object.
+ */
+public class LocalBook extends Book {
 
-    public LocalBook(String name, String path, long size) {
-        this.name = name;
+    public LocalBook() {
+    }
+
+    public LocalBook(String title, String path, long length) {
+        this.title = title;
         this.path = path;
-        this.size = size;
+        this.length = length;
     }
 
     private LocalBook(Parcel source) {
-        name = source.readString();
+        title = source.readString();
         path = source.readString();
-        size = source.readLong();
+        length = source.readLong();
     }
 
     @Override
@@ -27,9 +31,9 @@ public class LocalBook implements BookData {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(name);
+        dest.writeString(title);
         dest.writeString(path);
-        dest.writeLong(size);
+        dest.writeLong(length);
     }
 
     public static final Parcelable.Creator<LocalBook> CREATOR = new Parcelable.Creator<LocalBook>() {

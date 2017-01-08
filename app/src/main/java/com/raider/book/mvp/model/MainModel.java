@@ -2,17 +2,23 @@ package com.raider.book.mvp.model;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 
 import com.raider.book.mvp.contract.MainContract;
 import com.raider.book.contract.RaiderDBContract;
-import com.raider.book.dao.BookData;
+import com.raider.book.dao.LocalBook;
 import com.raider.book.utils.BookDBOpenHelper;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.raider.book.contract.RaiderDBContract.ShelfReader.COLUMN_LENGTH;
+import static com.raider.book.contract.RaiderDBContract.ShelfReader.COLUMN_PATH;
+import static com.raider.book.contract.RaiderDBContract.ShelfReader.COLUMN_TITLE;
 
 public class MainModel implements MainContract.Model {
     Context mContext;
@@ -21,18 +27,18 @@ public class MainModel implements MainContract.Model {
         this.mContext = context;
     }
 
-    public ArrayList<BookData> loadFromDB() {
+    public ArrayList<LocalBook> loadFromDB() {
         SQLiteDatabase db = new BookDBOpenHelper(mContext).getWritableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + RaiderDBContract.ShelfReader.TABLE_NAME, null);
-        ArrayList<BookData> books = new ArrayList<>();
+        ArrayList<LocalBook> books = new ArrayList<>();
         if (cursor == null) {
             return books;
         }
         while (cursor.moveToNext()) {
-            String name = cursor.getString(cursor.getColumnIndex(RaiderDBContract.ShelfReader.COLUMN_NAME_NAME));
-            String path = cursor.getString(cursor.getColumnIndex(RaiderDBContract.ShelfReader.COLUMN_NAME_PATH));
-            int size = cursor.getInt(cursor.getColumnIndex(RaiderDBContract.ShelfReader.COLUMN_NAME_SIZE));
-            books.add(new BookData(name, path, size));
+            String name = cursor.getString(cursor.getColumnIndex(COLUMN_TITLE));
+            String path = cursor.getString(cursor.getColumnIndex(COLUMN_PATH));
+            int length = cursor.getInt(cursor.getColumnIndex(COLUMN_LENGTH));
+            books.add(new LocalBook(name, path, length));
         }
         cursor.close();
         db.close();
@@ -45,11 +51,11 @@ public class MainModel implements MainContract.Model {
      * @param currentBooks Books in db before action
      * @return Books deleted if success, null if failed in db delete.
      */
-    public ArrayList<BookData> deleteNonexistentFromDB(List<BookData> currentBooks) {
-        ArrayList<BookData> deleteBooks = new ArrayList<>();
+    public ArrayList<LocalBook> deleteNonexistentFromDB(List<LocalBook> currentBooks) {
+        ArrayList<LocalBook> deleteBooks = new ArrayList<>();
 
         File file;
-        for (BookData book : currentBooks) {
+        for (LocalBook book : currentBooks) {
             file = new File(book.path);
             if (!file.exists())
                 deleteBooks.add(book);
@@ -61,10 +67,10 @@ public class MainModel implements MainContract.Model {
 
             try {
                 String[] whereArgs;
-                for (BookData deleteBook : deleteBooks) {
+                for (LocalBook deleteBook : deleteBooks) {
                     whereArgs = new String[]{deleteBook.path};
                     db.delete(RaiderDBContract.ShelfReader.TABLE_NAME
-                            , RaiderDBContract.ShelfReader.COLUMN_NAME_PATH + "=?"
+                            , COLUMN_PATH + "=?"
                             , whereArgs);
                 }
                 db.setTransactionSuccessful();
@@ -84,17 +90,17 @@ public class MainModel implements MainContract.Model {
      * @param deleteFiles true: delete files.
      * @return success or failure
      */
-    public boolean deleteSelectedBooksFromDB(ArrayList<BookData> deleteBooks, boolean deleteFiles) {
+    public boolean deleteSelectedBooksFromDB(ArrayList<LocalBook> deleteBooks, boolean deleteFiles) {
         boolean hasException = false;
         SQLiteDatabase db = new BookDBOpenHelper(mContext).getWritableDatabase();
         db.beginTransaction();
 
         try {
             String[] whereArgs;
-            for (BookData deleteBook : deleteBooks) {
+            for (LocalBook deleteBook : deleteBooks) {
                 whereArgs = new String[]{deleteBook.path};
                 db.delete(RaiderDBContract.ShelfReader.TABLE_NAME
-                        , RaiderDBContract.ShelfReader.COLUMN_NAME_PATH + "=?"
+                        , COLUMN_PATH + "=?"
                         , whereArgs);
             }
             db.setTransactionSuccessful();
@@ -108,8 +114,11 @@ public class MainModel implements MainContract.Model {
 
         if (deleteFiles) {
             File file;
-            for (BookData deleteBook : deleteBooks) {
+            for (LocalBook deleteBook : deleteBooks) {
                 file = new File(deleteBook.path);
+                // Notify MediaStore.
+                Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file));
+                mContext.sendBroadcast(intent);
                 if (!file.delete()) {
                     return false;
                 }

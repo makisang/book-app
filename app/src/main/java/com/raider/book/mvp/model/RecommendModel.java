@@ -14,10 +14,10 @@ import retrofit2.http.GET;
 import retrofit2.http.Query;
 import rx.Observable;
 
-public class JournalModel implements OnlineContract.JournalModel {
+public class RecommendModel implements OnlineContract.RecommendModel {
     Context mContext;
 
-    public JournalModel(Context context) {
+    public RecommendModel(Context context) {
         this.mContext = context;
     }
 

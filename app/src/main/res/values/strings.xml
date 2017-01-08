@@ -1,32 +1,32 @@
 <resources>
-    <string name="hello_world">Hello world!</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string title="hello_world">Hello world!</string>
+    <string title="hello_blank_fragment">Hello blank fragment</string>
 
-    <string name="app_name">Book</string>
+    <string title="app_name">Book</string>
 
     <!--menu-->
-    <string name="online_books">Online books</string>
-    <string name="action_import">Import books</string>
-    <string name="action_add">add</string>
-    <string name="action_delete">delete</string>
-    <string name="action_select_all">select add</string>
-    <string name="action_deselect_all">deselect all</string>
+    <string title="online_books">Online books</string>
+    <string title="action_import">Import books</string>
+    <string title="action_add">add</string>
+    <string title="action_delete">delete</string>
+    <string title="action_select_all">select add</string>
+    <string title="action_deselect_all">deselect all</string>
 
     <!-- shelfActivity -->
-    <string name="toolbar_shelf">Shelf</string>
-    <string name="drawer_open">open drawer</string>
-    <string name="drawer_close">close drawer</string>
-    <string name="delete_failure">delete non-existent books failed</string>
-    <string name="delete_message">remove from shelf</string>
-    <string name="delete_file">delete file concurrently</string>
-    <string name="sd_import">import from SD</string>
-    <string name="bt_import">import from bluetooth</string>
+    <string title="toolbar_shelf">Shelf</string>
+    <string title="drawer_open">open drawer</string>
+    <string title="drawer_close">close drawer</string>
+    <string title="delete_failure">delete non-existent books failed</string>
+    <string title="delete_message">remove from shelf</string>
+    <string title="delete_file">delete file concurrently</string>
+    <string title="sd_import">import from SD</string>
+    <string title="bt_import">import from bluetooth</string>
 
     <!-- SDImportActivity -->
-    <string name="toolbar_import">ImportBook</string>
-    <string name="hint_need_checked">please choose at least one file</string>
-    <string name="hint_add_book_success">added book number is:%1$d</string>
-    <string name="already_in_shelf">already in shelf</string>
+    <string title="toolbar_import">ImportBook</string>
+    <string title="hint_need_checked">please choose at least one file</string>
+    <string title="hint_add_book_success">added book number is:%1$d</string>
+    <string title="already_in_shelf">already in shelf</string>
 
     <!-- OnlineActivity -->
     <string name="online">Online</string>

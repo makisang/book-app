@@ -1,25 +1,56 @@
 package com.raider.book.custom.sbv;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Environment;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.Scroller;
 
-import com.raider.book.dao.BookData;
+import com.raider.book.dao.Book;
+import com.raider.book.dao.LocalBook;
+import com.raider.book.dao.NetBook;
+import com.raider.book.interf.BookLoadListener;
+import com.raider.book.utils.BookDBOpenHelper;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
+
+import static com.raider.book.contract.RaiderDBContract.ShelfReader.COLUMN_END;
+import static com.raider.book.contract.RaiderDBContract.ShelfReader.COLUMN_PATH;
+import static com.raider.book.contract.RaiderDBContract.ShelfReader.COLUMN_START;
+import static com.raider.book.contract.RaiderDBContract.ShelfReader.COLUMN_TITLE;
+import static com.raider.book.contract.RaiderDBContract.ShelfReader.TABLE_NAME;
+import static com.raider.book.contract.URLCollection.QING_STOR_FILE_DIC;
 
 public class SlideBookView extends android.view.View {
     private static final String TAG = "BookView";
@@ -31,7 +62,7 @@ public class SlideBookView extends android.view.View {
     private static int TEXT_SIZE_PX;
     private static final int LINE_SPACING_PX = 10;
 
-    private BookData mBookData;
+    private Book mBook;
     private Paint mPaint;
     private int mWidth;
     private int mHeight;
@@ -42,6 +73,8 @@ public class SlideBookView extends android.view.View {
     private int topPadding = 20;
     private int bottomPadding = 20;
 
+    private String mStoragePath;
+    private volatile boolean bInLoading;
     private MappedByteBuffer mappedByteBuffer;
     private int prevPageSize;
     private int nextPageSize;
@@ -58,12 +91,15 @@ public class SlideBookView extends android.view.View {
     private boolean aForward;
     private boolean aSlideRecovery;
     private GestureDetector mGestureDetector;
+    /**
+     * Book Load Listener.
+     */
+    private BookLoadListener mBookLoadListener;
 
-    public SlideBookView(Context context, BookData bookData, AttributeSet attrs) {
+
+    public SlideBookView(Context context, Book book, AttributeSet attrs) {
         this(context, attrs);
-        mBookData = bookData;
-        File file = new File(bookData.path);
-        maxLen = file.length();
+        mBook = book;
     }
 
     public SlideBookView(Context context) {
@@ -85,7 +121,9 @@ public class SlideBookView extends android.view.View {
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mPaint.setTextAlign(Paint.Align.LEFT);
         mPaint.setColor(Color.BLACK);
-        mPaint.setLetterSpacing(0.05f);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mPaint.setLetterSpacing(0.05f);
+        }
 
         mGestureDetector = new GestureDetector(getContext().getApplicationContext(), new MyGestureListener());
         mRect = new Rect();
@@ -101,35 +139,145 @@ public class SlideBookView extends android.view.View {
         mPaint.setTextSize(TEXT_SIZE_PX);
         maxLineSize = (mHeight - TEXT_SIZE_PX - topPadding - bottomPadding) / (TEXT_SIZE_PX + LINE_SPACING_PX) + 1;
         // Load book data requires maxLineSize.
-        if (mappedByteBuffer == null) {
-            loadBook(mBookData);
+        if (mappedByteBuffer == null && !bInLoading) {
+            loadBook();
         }
     }
 
-    private void loadBook(final BookData bookData) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                initMBB(bookData.path);
-            }
-        }).start();
+    public void addLoadListener(BookLoadListener bookLoadListener) {
+        mBookLoadListener = bookLoadListener;
     }
 
-    public void initMBB(String path) {
-        File file = new File(path);
+    private void loadBook() {
+        bInLoading = true;
+
+        // Get book file path.
+        Func1<Book, String> func1 = new Func1<Book, String>() {
+            @Override
+            public String call(Book book) {
+                if (book instanceof LocalBook) {
+                    return book.path;
+                } else if (book instanceof NetBook) {
+                    // Check whether already downloaded.
+                    String storagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + File.separator + mBook.title + ".txt";
+                    File file = new File(storagePath);
+                    if (file.exists()) {
+                        return storagePath;
+                    }
+                    return downloadBook(book.path, storagePath);
+                }
+                return null;
+            }
+        };
+
+        // Query db and init mappedByteBuffer.
+        Func1<String, Boolean> func2 = new Func1<String, Boolean>() {
+            @Override
+            public Boolean call(String path) {
+                if (path == null) return false;
+                // Query last read history.
+                BookDBOpenHelper dbOpenHelper = new BookDBOpenHelper(getContext());
+                SQLiteDatabase database = dbOpenHelper.getWritableDatabase();
+                Cursor cursor = database.query(TABLE_NAME, new String[]{COLUMN_START, COLUMN_END}, COLUMN_PATH + "=?", new String[]{path}, null, null, null);
+                if (cursor.getCount() == 0) {
+                    // No book data in db, insert one.
+                    ContentValues values = new ContentValues();
+                    values.put(COLUMN_TITLE, mBook.title);
+                    values.put(COLUMN_PATH, path);
+                    database.insert(TABLE_NAME, null, values);
+                    cursor.close();
+                    return initMBB(path, 0, 0);
+                }
+                int startPoint = 0;
+                int endPoint = 0;
+                if (cursor.moveToFirst()) {
+                    startPoint = cursor.getInt(cursor.getColumnIndex(COLUMN_START));
+                    endPoint = cursor.getInt(cursor.getColumnIndex(COLUMN_END));
+                }
+                cursor.close();
+                return initMBB(path, startPoint, endPoint);
+            }
+        };
+
+        // Interface callback.
+        Action1<Boolean> action1 = new Action1<Boolean>() {
+            @Override
+            public void call(Boolean initSuccess) {
+                mBookLoadListener.onLoadCompleted(initSuccess);
+            }
+        };
+
+        Observable.just(mBook)
+                .map(func1)
+                .map(func2)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(action1);
+    }
+
+    /**
+     * Download book from server.
+     */
+    private String downloadBook(String url, final String storagePath) {
+        OkHttpClient okHttpClient = new OkHttpClient.Builder().build();
+        Request request = new Request.Builder()
+                .get()
+                .url(QING_STOR_FILE_DIC + mBook.title + ".txt")
+                .build();
+        Call call = okHttpClient.newCall(request);
         try {
-            RandomAccessFile raf = new RandomAccessFile(file, "r");
-            // TODO expensive
-            mappedByteBuffer = raf.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
-            indexMap.put(CURRENT_START, 0);
-            prevStrLines = getPrevPage();
-            currentStrLines = getFirstPage();
-            nextStrLines = getNextPage();
-            raf.close();
-            postInvalidate();
+            Response response = call.execute();
+            InputStream inputStream = response.body().byteStream();
+
+            boolean fileExists = true;
+            File file = new File(storagePath);
+            if (!file.exists()) {
+                fileExists = file.createNewFile();
+            }
+            if (fileExists) {
+                FileOutputStream fos = new FileOutputStream(file);
+                byte[] bytes = new byte[1024];
+                int len;
+                while ((len = inputStream.read(bytes)) != -1) {
+                    fos.write(bytes, 0, len);
+                }
+                inputStream.close();
+                fos.close();
+            }
+            // Notify MediaStore.
+            Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file));
+            getContext().sendBroadcast(intent);
+
+            return file.getAbsolutePath();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return null;
+    }
+
+    public boolean initMBB(String path, int startPoint, int endPoint) {
+        File file = new File(path);
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "r");
+            // Get file size.
+            maxLen = raf.length();
+            // TODO expensive
+            mappedByteBuffer = raf.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+            indexMap.put(CURRENT_START, startPoint);
+            indexMap.put(CURRENT_END, endPoint);
+            prevStrLines = getPrevPage();
+            currentStrLines = getFirstPage(startPoint);
+            nextStrLines = getNextPage();
+            raf.close();
+            postInvalidate();
+            bInLoading = false;
+            mStoragePath = path;
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @Override
@@ -141,6 +289,20 @@ public class SlideBookView extends android.view.View {
         prevStrLines = null;
         currentStrLines = null;
         nextStrLines = null;
+
+        // Save read history in db.
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                BookDBOpenHelper dbOpenHelper = new BookDBOpenHelper(getContext());
+                SQLiteDatabase database = dbOpenHelper.getWritableDatabase();
+                ContentValues values = new ContentValues();
+                values.put(COLUMN_START, indexMap.get(CURRENT_START));
+                values.put(COLUMN_END, indexMap.get(CURRENT_END));
+                int update = database.update(TABLE_NAME, values, COLUMN_PATH + "=?", new String[]{mStoragePath});
+                Log.d("test", "insert number: " + update);
+            }
+        }).start();
     }
 
     @Override
@@ -432,16 +594,16 @@ public class SlideBookView extends android.view.View {
         try {
             while (strLines.size() < maxLineSize) {
                 byte[] bytes = readNextParagraph(start);
+                // Reach end.
+                if (bytes.length == 0) break;
 
                 str_paragraph = new String(bytes, CHARSET_GBK);
                 length = str_paragraph.length();
                 measuredSize = mPaint.breakText(str_paragraph, true, mWidth - 20, null);
-
                 while (measuredSize <= length) {
                     if (strLines.size() >= maxLineSize) break;
                     String measuredStr = str_paragraph.substring(0, measuredSize);
                     byte[] measuredBytes = measuredStr.getBytes(CHARSET_GBK);
-
                     // In break process, '\r\n' may be broken into '\r' in the end of one line,
                     // and '\n' in the next line, so deal with this situation.
                     // TODO: deal with line break in form of '\r' or '\n'.
@@ -472,8 +634,8 @@ public class SlideBookView extends android.view.View {
         return strLines;
     }
 
-    private ArrayList<String> getFirstPage() {
-        int start = 0, pageSize = 0;
+    private ArrayList<String> getFirstPage(int startPoint) {
+        int currentEnd = startPoint, pageSize = 0;
 
         ArrayList<String> strLines = new ArrayList<>();
         String str_paragraph;
@@ -482,19 +644,30 @@ public class SlideBookView extends android.view.View {
 
         try {
             while (strLines.size() < maxLineSize) {
-                byte[] bytes = readNextParagraph(start);
+                byte[] bytes = readNextParagraph(currentEnd);
+                // Reach end.
+                if (bytes.length == 0) break;
 
                 str_paragraph = new String(bytes, CHARSET_GBK);
                 length = str_paragraph.length();
                 measuredSize = mPaint.breakText(str_paragraph, true, mWidth - 20, null);
-
                 while (measuredSize <= length) {
                     if (strLines.size() >= maxLineSize) break;
                     String measuredStr = str_paragraph.substring(0, measuredSize);
-                    pageSize += measuredStr.getBytes(CHARSET_GBK).length;
-                    start += measuredStr.getBytes(CHARSET_GBK).length;
-                    strLines.add(measuredStr);
-
+                    byte[] measuredBytes = measuredStr.getBytes(CHARSET_GBK);
+                    // In break process, '\r\n' may be broken into '\r' in the end of one line,
+                    // and '\n' in the next line, so deal with this situation.
+                    // TODO: deal with line break in form of '\r' or '\n'.
+                    if (!(measuredBytes.length == 1 && 0x0a == measuredBytes[0])) {
+                        // If ends with '\r', add '\n' in the end.
+                        if (0x0d == measuredBytes[measuredBytes.length - 1]) {
+                            measuredStr = measuredStr + new String(new byte[]{0x0a}, CHARSET_GBK);
+                        }
+                        pageSize += measuredStr.getBytes(CHARSET_GBK).length;
+                        // Update start index.
+                        currentEnd += measuredStr.getBytes(CHARSET_GBK).length;
+                        strLines.add(measuredStr);
+                    }
                     if (measuredSize == length) break;
                     str_paragraph = str_paragraph.substring(measuredSize);
                     measuredSize = mPaint.breakText(str_paragraph, true, mWidth - leftPadding - rightPadding, null);
@@ -505,8 +678,8 @@ public class SlideBookView extends android.view.View {
             e.printStackTrace();
         }
 
-        indexMap.put(CURRENT_START, 0);
-        indexMap.put(CURRENT_END, pageSize - 1);
+//        indexMap.put(CURRENT_START, startPoint);
+        indexMap.put(CURRENT_END, currentEnd);
         return strLines;
     }
 

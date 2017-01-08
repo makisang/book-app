@@ -7,7 +7,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 
-import com.raider.book.dao.BookData;
+import com.raider.book.dao.LocalBook;
 import com.raider.book.utils.SDCardUtil;
 
 import java.io.File;
@@ -22,13 +22,13 @@ public class BookScanner {
     private static final String FILE_FILTER_TXT = ".txt";
 
     private volatile static boolean shutdownRequested = false;
-    private static ArrayList<BookData> books = new ArrayList<>();
+    private static ArrayList<LocalBook> books = new ArrayList<>();
 
     public static void shutdown() {
         shutdownRequested = true;
     }
 
-    public static ArrayList<BookData> traverseInSD() {
+    public static ArrayList<LocalBook> traverseInSD() {
         shutdownRequested = false;
         if (SDCardUtil.isSDCardAvail()) {
             books.clear();
@@ -36,7 +36,7 @@ public class BookScanner {
             File file = new File(path);
             findTXT(file);
         }
-        ArrayList<BookData> anotherList = new ArrayList<>(books.size());
+        ArrayList<LocalBook> anotherList = new ArrayList<>(books.size());
         anotherList.addAll(books);
         books.clear();
         return anotherList;
@@ -57,7 +57,7 @@ public class BookScanner {
         } else {
             if (file.getName().endsWith(FILE_FILTER_TXT)) {
                 // 获取BookData对象，放入集合中
-                BookData book = new BookData(parseName(file.getName()), file.getAbsolutePath(), file.length());
+                LocalBook book = new LocalBook(parseName(file.getName()), file.getAbsolutePath(), file.length());
                 books.add(book);
             }
         }
@@ -67,7 +67,7 @@ public class BookScanner {
         return name.substring(0, name.length() - (FILE_FILTER_TXT.length()));
     }
 
-    public static ArrayList<BookData> getFilesFromMediaStore(ContentResolver cr) {
+    public static ArrayList<LocalBook> getFilesFromMediaStore(ContentResolver cr) {
         Uri externalUri = MediaStore.Files.getContentUri("external");
         Cursor cursor = cr.query(externalUri, null,
                 MediaStore.Files.FileColumns.MIME_TYPE + "=?",
@@ -78,11 +78,11 @@ public class BookScanner {
             String path = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
             String title = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.TITLE));
             long size = Long.parseLong(cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.SIZE)));
-            BookData book = new BookData(title, path, size);
+            LocalBook book = new LocalBook(title, path, size);
             books.add(book);
         }
         cursor.close();
-        ArrayList<BookData> anotherList = new ArrayList<>(books.size());
+        ArrayList<LocalBook> anotherList = new ArrayList<>(books.size());
         anotherList.addAll(books);
         books.clear();
         return anotherList;

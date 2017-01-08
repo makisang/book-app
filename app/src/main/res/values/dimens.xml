@@ -1,5 +1,5 @@
 <resources>
-    <!--text size-->
+    <!--text length-->
     <dimen name="text_size_12">12sp</dimen>
     <dimen name="text_size_14">14sp</dimen>
     <dimen name="text_size_16">16sp</dimen>
@@ -19,7 +19,7 @@
     <dimen name="large_padding">32dp</dimen>
     <dimen name="large_margin">32dp</dimen>
 
-    <!-- component size -->
+    <!-- component length -->
     <dimen name="fab_size">56dp</dimen>
 
     <!-- elevation -->
@@ -29,7 +29,7 @@
     <dimen name="elevation_fab_rest">6dp</dimen>
     <dimen name="elevation_fab_pressed">12dp</dimen>
 
-    <!-- PopupWindow size -->
+    <!-- PopupWindow length -->
     <dimen name="popup_width">200dp</dimen>
     <dimen name="popup_height">300dp</dimen>
 

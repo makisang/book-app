@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.raider.book.R;
-import com.raider.book.dao.BookData;
+import com.raider.book.dao.LocalBook;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,14 +19,14 @@ import java.util.List;
 /**
  * 在书架中显示.txt文件
  */
-public class BookInShelfAdapter extends MyBaseAdapter<BookData, BookInShelfAdapter.MyViewHolder> {
+public class BookInShelfAdapter extends MyBaseAdapter<LocalBook, BookInShelfAdapter.MyViewHolder> {
     public static final int NORMAL_MODE = 0;
     public static final int SELECT_MODE = 1;
     int mode = NORMAL_MODE;
 
     SparseIntArray selectedIndex;
 
-    public BookInShelfAdapter(Context context, @NonNull List<BookData> shelfBooks) {
+    public BookInShelfAdapter(Context context, @NonNull List<LocalBook> shelfBooks) {
         super(context, shelfBooks);
         this.selectedIndex = new SparseIntArray();
     }
@@ -62,7 +62,7 @@ public class BookInShelfAdapter extends MyBaseAdapter<BookData, BookInShelfAdapt
 
     public void selectAll() {
         selectedIndex.clear();
-        for (int i = 0; i < dataList.size(); i++) {
+        for (int i = 0; i < mDataList.size(); i++) {
             selectedIndex.put(i, i);
         }
         notifyDataSetChanged();
@@ -77,14 +77,14 @@ public class BookInShelfAdapter extends MyBaseAdapter<BookData, BookInShelfAdapt
 
     public void removeSelected() {
         int position = 0;
-        ArrayList<BookData> selectedBooks = new ArrayList<>();
+        ArrayList<LocalBook> selectedBooks = new ArrayList<>();
         for (int i = 0; i < selectedIndex.size(); i++) {
             position = selectedIndex.valueAt(i);
-            selectedBooks.add(dataList.get(position));
+            selectedBooks.add(mDataList.get(position));
         }
 
-        for (BookData book : selectedBooks) {
-            dataList.remove(book);
+        for (LocalBook book : selectedBooks) {
+            mDataList.remove(book);
         }
 
         if (selectedIndex.size() == 1) {
@@ -95,10 +95,10 @@ public class BookInShelfAdapter extends MyBaseAdapter<BookData, BookInShelfAdapt
         selectedIndex.clear();
     }
 
-    public ArrayList<BookData> getSelectedBooks() {
-        ArrayList<BookData> selectedBooks = new ArrayList<>();
+    public ArrayList<LocalBook> getSelectedBooks() {
+        ArrayList<LocalBook> selectedBooks = new ArrayList<>();
         for (int i = 0; i < selectedIndex.size(); i++) {
-            selectedBooks.add(dataList.get(selectedIndex.valueAt(i)));
+            selectedBooks.add(mDataList.get(selectedIndex.valueAt(i)));
         }
         return selectedBooks;
     }
@@ -111,8 +111,8 @@ public class BookInShelfAdapter extends MyBaseAdapter<BookData, BookInShelfAdapt
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        BookData book = dataList.get(holder.getAdapterPosition());
-        holder.textView.setText(book.name);
+        LocalBook book = mDataList.get(holder.getAdapterPosition());
+        holder.textView.setText(book.title);
         holder.cardView.setSelected(getMode() == SELECT_MODE && selectedIndex.indexOfKey(holder.getAdapterPosition()) >= 0);
     }
 

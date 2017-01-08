@@ -8,7 +8,7 @@ import android.util.SparseIntArray;
 
 import com.raider.book.contract.RaiderDBContract;
 import com.raider.book.engine.BookScanner;
-import com.raider.book.dao.BookData;
+import com.raider.book.dao.LocalBook;
 import com.raider.book.mvp.contract.SDImportContract;
 import com.raider.book.utils.BookDBOpenHelper;
 
@@ -16,45 +16,48 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import static com.raider.book.contract.RaiderDBContract.ShelfReader.COLUMN_PATH;
+import static com.raider.book.contract.RaiderDBContract.ShelfReader.COLUMN_TITLE;
+
 public class SmartModel implements SDImportContract.ScannerModel {
 
     private static final String TAG = "test";
 
     Context mContext;
-    ArrayList<BookData> books;
+    ArrayList<LocalBook> books;
 
     public SmartModel(Context context) {
         this.mContext = context;
     }
 
     @Override
-    public ArrayList<BookData> getAllFiles() {
+    public ArrayList<LocalBook> getAllFiles() {
         books = BookScanner.traverseInSD();
-        // sort by size descend.
-        Collections.sort(books, new Comparator<BookData>() {
+        // sort by length descend.
+        Collections.sort(books, new Comparator<LocalBook>() {
             @Override
-            public int compare(BookData bookData, BookData t1) {
-                return bookData.size > t1.size ? -1 : bookData.size == t1.size ? 0 : 1;
+            public int compare(LocalBook localBook, LocalBook t1) {
+                return localBook.length > t1.length ? -1 : localBook.length == t1.length ? 0 : 1;
             }
         });
         return books;
     }
 
     @Override
-    public ArrayList<BookData> save2DB(SparseIntArray sparseIntArray) {
+    public ArrayList<LocalBook> save2DB(SparseIntArray sparseIntArray) {
         // 用于通知书架更新界面
-        ArrayList<BookData> addedBooks = new ArrayList<>();
+        ArrayList<LocalBook> addedBooks = new ArrayList<>();
 
         ArrayList<ContentValues> insertList = new ArrayList<>();
         SQLiteDatabase db = new BookDBOpenHelper(mContext).getWritableDatabase();
         if (books != null) {
             for (int i = 0; i < sparseIntArray.size(); i++) {
                 int _i = sparseIntArray.valueAt(i);
-                BookData book = books.get(_i);
+                LocalBook book = books.get(_i);
                 addedBooks.add(book);
                 ContentValues contentValues = new ContentValues();
-                contentValues.put(RaiderDBContract.ShelfReader.COLUMN_NAME_NAME, book.name);
-                contentValues.put(RaiderDBContract.ShelfReader.COLUMN_NAME_PATH, book.path);
+                contentValues.put(COLUMN_TITLE, book.title);
+                contentValues.put(COLUMN_PATH, book.path);
                 insertList.add(contentValues);
             }
         }
