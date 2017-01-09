@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.WindowManager;
 
 import com.raider.book.R;
 import com.raider.book.app.BookApplication;
@@ -30,12 +31,13 @@ public class ReadActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // FullScreen.
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_read);
 
         Intent intent = getIntent();
         Book book = intent.getParcelableExtra(EXTRA_BOOK);
 
-        // Add mFragment to activity.
         mFragment = (ReadFragment) getSupportFragmentManager().findFragmentById(R.id.frame_container);
         if (mFragment == null) {
             mFragment = ReadFragment.newInstance(book);

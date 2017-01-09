@@ -74,7 +74,6 @@ public class SlideBookView extends android.view.View {
     private int bottomPadding = 20;
 
     private String mStoragePath;
-    private volatile boolean bInLoading;
     private MappedByteBuffer mappedByteBuffer;
     private int prevPageSize;
     private int nextPageSize;
@@ -100,6 +99,7 @@ public class SlideBookView extends android.view.View {
     public SlideBookView(Context context, Book book, AttributeSet attrs) {
         this(context, attrs);
         mBook = book;
+        init();
     }
 
     public SlideBookView(Context context) {
@@ -112,7 +112,6 @@ public class SlideBookView extends android.view.View {
 
     public SlideBookView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
     }
 
     private void init() {
@@ -127,21 +126,26 @@ public class SlideBookView extends android.view.View {
 
         mGestureDetector = new GestureDetector(getContext().getApplicationContext(), new MyGestureListener());
         mRect = new Rect();
+
+        mWidth = getResources().getDisplayMetrics().widthPixels - leftPadding - rightPadding - 40;
+        mHeight = getResources().getDisplayMetrics().heightPixels;
+        TEXT_SIZE_PX = (mWidth - leftPadding - rightPadding) / 20;
+        mPaint.setTextSize(TEXT_SIZE_PX);
+        maxLineSize = (mHeight - topPadding - bottomPadding - TEXT_SIZE_PX - LINE_SPACING_PX) / (TEXT_SIZE_PX + LINE_SPACING_PX);
+
+        // Load book data requires maxLineSize.
+        if (mappedByteBuffer == null) {
+            loadBook();
+        }
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        mWidth = MeasureSpec.getSize(widthMeasureSpec);
-        mHeight = MeasureSpec.getSize(heightMeasureSpec);
-        TEXT_SIZE_PX = mWidth / 20;
+//        mWidth = MeasureSpec.getSize(widthMeasureSpec);
+//        mHeight = MeasureSpec.getSize(heightMeasureSpec);
+//        Log.d("test", "onMeasure: " + mWidth + ", " + mHeight);
 
-        mPaint.setTextSize(TEXT_SIZE_PX);
-        maxLineSize = (mHeight - TEXT_SIZE_PX - topPadding - bottomPadding) / (TEXT_SIZE_PX + LINE_SPACING_PX) + 1;
-        // Load book data requires maxLineSize.
-        if (mappedByteBuffer == null && !bInLoading) {
-            loadBook();
-        }
     }
 
     public void addLoadListener(BookLoadListener bookLoadListener) {
@@ -149,8 +153,6 @@ public class SlideBookView extends android.view.View {
     }
 
     private void loadBook() {
-        bInLoading = true;
-
         // Get book file path.
         Func1<Book, String> func1 = new Func1<Book, String>() {
             @Override
@@ -271,7 +273,6 @@ public class SlideBookView extends android.view.View {
             nextStrLines = getNextPage();
             raf.close();
             postInvalidate();
-            bInLoading = false;
             mStoragePath = path;
             return true;
         } catch (IOException e) {
@@ -300,7 +301,7 @@ public class SlideBookView extends android.view.View {
                 values.put(COLUMN_START, indexMap.get(CURRENT_START));
                 values.put(COLUMN_END, indexMap.get(CURRENT_END));
                 int update = database.update(TABLE_NAME, values, COLUMN_PATH + "=?", new String[]{mStoragePath});
-                Log.d("test", "insert number: " + update);
+                Log.d("test", "update number: " + update);
             }
         }).start();
     }
@@ -539,7 +540,7 @@ public class SlideBookView extends android.view.View {
                 str_paragraph = new String(bytes, CHARSET_GBK);
                 length = str_paragraph.length();
 
-                measuredSize = mPaint.breakText(str_paragraph, true, mWidth - 20, null);
+                measuredSize = mPaint.breakText(str_paragraph, true, mWidth, null);
                 while (measuredSize <= length) {
                     String measuredStr = str_paragraph.substring(0, measuredSize);
                     byte[] measuredBytes = measuredStr.getBytes(CHARSET_GBK);
@@ -559,7 +560,7 @@ public class SlideBookView extends android.view.View {
                     if (measuredSize == length) break;
                     str_paragraph = str_paragraph.substring(measuredSize);
                     length = str_paragraph.length();
-                    measuredSize = mPaint.breakText(str_paragraph, true, mWidth - 20, null);
+                    measuredSize = mPaint.breakText(str_paragraph, true, mWidth, null);
                 }
                 tempLines.addAll(0, currentLines);
             }
@@ -599,7 +600,7 @@ public class SlideBookView extends android.view.View {
 
                 str_paragraph = new String(bytes, CHARSET_GBK);
                 length = str_paragraph.length();
-                measuredSize = mPaint.breakText(str_paragraph, true, mWidth - 20, null);
+                measuredSize = mPaint.breakText(str_paragraph, true, mWidth, null);
                 while (measuredSize <= length) {
                     if (strLines.size() >= maxLineSize) break;
                     String measuredStr = str_paragraph.substring(0, measuredSize);
@@ -622,7 +623,7 @@ public class SlideBookView extends android.view.View {
                     if (measuredSize == length) break;
                     // Drop the text already in strLines, measure the remaining text.
                     str_paragraph = str_paragraph.substring(measuredSize);
-                    measuredSize = mPaint.breakText(str_paragraph, true, mWidth - leftPadding - rightPadding, null);
+                    measuredSize = mPaint.breakText(str_paragraph, true, mWidth, null);
                     length = str_paragraph.length();
                 }
             }
@@ -635,7 +636,7 @@ public class SlideBookView extends android.view.View {
     }
 
     private ArrayList<String> getFirstPage(int startPoint) {
-        int currentEnd = startPoint, pageSize = 0;
+        int index = startPoint, pageSize = 0;
 
         ArrayList<String> strLines = new ArrayList<>();
         String str_paragraph;
@@ -644,13 +645,13 @@ public class SlideBookView extends android.view.View {
 
         try {
             while (strLines.size() < maxLineSize) {
-                byte[] bytes = readNextParagraph(currentEnd);
+                byte[] bytes = readNextParagraph(index);
                 // Reach end.
                 if (bytes.length == 0) break;
 
                 str_paragraph = new String(bytes, CHARSET_GBK);
                 length = str_paragraph.length();
-                measuredSize = mPaint.breakText(str_paragraph, true, mWidth - 20, null);
+                measuredSize = mPaint.breakText(str_paragraph, true, mWidth, null);
                 while (measuredSize <= length) {
                     if (strLines.size() >= maxLineSize) break;
                     String measuredStr = str_paragraph.substring(0, measuredSize);
@@ -665,12 +666,12 @@ public class SlideBookView extends android.view.View {
                         }
                         pageSize += measuredStr.getBytes(CHARSET_GBK).length;
                         // Update start index.
-                        currentEnd += measuredStr.getBytes(CHARSET_GBK).length;
+                        index += measuredStr.getBytes(CHARSET_GBK).length;
                         strLines.add(measuredStr);
                     }
                     if (measuredSize == length) break;
                     str_paragraph = str_paragraph.substring(measuredSize);
-                    measuredSize = mPaint.breakText(str_paragraph, true, mWidth - leftPadding - rightPadding, null);
+                    measuredSize = mPaint.breakText(str_paragraph, true, mWidth, null);
                     length = str_paragraph.length();
                 }
             }
@@ -679,7 +680,8 @@ public class SlideBookView extends android.view.View {
         }
 
 //        indexMap.put(CURRENT_START, startPoint);
-        indexMap.put(CURRENT_END, currentEnd);
+        indexMap.put(CURRENT_END, startPoint + pageSize - 1);
+        Log.d("test", "first page line size: " + strLines.size());
         return strLines;
     }
 

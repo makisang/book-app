@@ -47,7 +47,8 @@
             android:parentActivityName=".activity.MainActivity"
             android:name=".activity.SDImportActivity" />
 
-        <activity android:name=".activity.ReadActivity" />
+        <activity android:name=".activity.ReadActivity"
+            />
 
         <activity
             android:parentActivityName=".activity.MainActivity"
