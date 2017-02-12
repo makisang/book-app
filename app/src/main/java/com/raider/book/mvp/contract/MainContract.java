@@ -2,7 +2,7 @@ package com.raider.book.mvp.contract;
 
 import com.raider.book.activity.MainActivity;
 import com.raider.book.base.RecyclerUI;
-import com.raider.book.dao.BookData;
+import com.raider.book.dao.LocalBook;
 import com.raider.book.mvp.presenter.MainPresenter;
 
 import java.util.ArrayList;
@@ -17,19 +17,19 @@ public class MainContract {
 
         void _showDeleteDialog();
 
-        void _toReadActivity(BookData book);
+        void _toReadActivity(LocalBook book);
 
         void _toSectionActivity();
 
-        void _toImportActivity(ArrayList<BookData> books);
+        void _toImportActivity(ArrayList<LocalBook> books);
     }
 
     public interface Model {
-        ArrayList<BookData> loadFromDB();
+        ArrayList<LocalBook> loadFromDB();
 
-        ArrayList<BookData> deleteNonexistentFromDB(List<BookData> currentBooks);
+        ArrayList<LocalBook> deleteNonexistentFromDB(List<LocalBook> currentBooks);
 
-        boolean deleteSelectedBooksFromDB(ArrayList<BookData> deleteBooks, boolean deleteFiles);
+        boolean deleteSelectedBooksFromDB(ArrayList<LocalBook> deleteBooks, boolean deleteFiles);
     }
 
 }

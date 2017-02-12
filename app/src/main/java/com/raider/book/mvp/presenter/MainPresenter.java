@@ -10,7 +10,7 @@ import com.raider.book.adapter.BookInShelfAdapter;
 import com.raider.book.mvp.contract.MainContract;
 import com.raider.book.interf.MyItemClickListener;
 import com.raider.book.interf.MyItemLongClickListener;
-import com.raider.book.dao.BookData;
+import com.raider.book.dao.LocalBook;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -56,17 +56,17 @@ public class MainPresenter implements RecyclerPresenter, MyItemClickListener, My
     public void loadBooks() {
         iView._showProgress();
         subscription = Observable.just(true)
-                .map(new Func1<Boolean, ArrayList<BookData>>() {
+                .map(new Func1<Boolean, ArrayList<LocalBook>>() {
                     @Override
-                    public ArrayList<BookData> call(Boolean aBoolean) {
+                    public ArrayList<LocalBook> call(Boolean aBoolean) {
                         return iModel.loadFromDB();
                     }
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<ArrayList<BookData>>() {
+                .subscribe(new Action1<ArrayList<LocalBook>>() {
                     @Override
-                    public void call(ArrayList<BookData> books) {
+                    public void call(ArrayList<LocalBook> books) {
                         if (mAdapter == null) {
                             iView._setAdapter2Presenter();
                         }
@@ -75,6 +75,28 @@ public class MainPresenter implements RecyclerPresenter, MyItemClickListener, My
                         mActivity.showFab();
                     }
                 });
+
+
+//        Flowable.just(true)
+//                .map(new Function<Boolean, ArrayList<LocalBook>>() {
+//                    @Override
+//                    public ArrayList<LocalBook> apply(Boolean aBoolean) throws Exception {
+//                        return iModel.loadFromDB();
+//                    }
+//                })
+//                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Consumer<ArrayList<LocalBook>>() {
+//                    @Override
+//                    public void accept(ArrayList<LocalBook> books) throws Exception {
+//                        if (mAdapter == null) {
+//                            iView._setAdapter2Presenter();
+//                        }
+//                        addBooks(books);
+//                        iView._hideProgress();
+//                        mActivity.showFab();
+//                    }
+//                });
     }
 
     /**
@@ -87,7 +109,7 @@ public class MainPresenter implements RecyclerPresenter, MyItemClickListener, My
                 .map(new Func1<Boolean, Boolean>() {
                     @Override
                     public Boolean call(Boolean aBoolean) {
-                        ArrayList<BookData> selectedBooks = mAdapter.getSelectedBooks();
+                        ArrayList<LocalBook> selectedBooks = mAdapter.getSelectedBooks();
                         return iModel.deleteSelectedBooksFromDB(selectedBooks, aBoolean);
                     }
                 })
@@ -106,6 +128,31 @@ public class MainPresenter implements RecyclerPresenter, MyItemClickListener, My
                         }
                     }
                 });
+
+
+//        Flowable.just(deleteFile)
+//                .map(new Function<Boolean, Boolean>() {
+//                    @Override
+//                    public Boolean apply(Boolean aBoolean) throws Exception {
+//                        ArrayList<LocalBook> selectedBooks = mAdapter.getSelectedBooks();
+//                        return iModel.deleteSelectedBooksFromDB(selectedBooks, aBoolean);
+//                    }
+//                })
+//                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Consumer<Boolean>() {
+//                    @Override
+//                    public void accept(Boolean success) throws Exception {
+//                        if (success) {
+//                            // remove data from adapter and update RecyclerView
+//                            mAdapter.removeSelected();
+//                            mAdapter.setMode(BookInShelfAdapter.NORMAL_MODE);
+//                            mActivity.changeMode(false);
+//                        } else {
+//                            iView._snackDeleteFailureInfo();
+//                        }
+//                    }
+//                });
     }
 
     /**
@@ -115,17 +162,17 @@ public class MainPresenter implements RecyclerPresenter, MyItemClickListener, My
     private void deleteNonExistentBooks() {
         mActivity.disableFab();
         Observable.just(mAdapter.getDataList())
-                .map(new Func1<List<BookData>, ArrayList<BookData>>() {
+                .map(new Func1<List<LocalBook>, ArrayList<LocalBook>>() {
                     @Override
-                    public ArrayList<BookData> call(List<BookData> currentBooks) {
+                    public ArrayList<LocalBook> call(List<LocalBook> currentBooks) {
                         return iModel.deleteNonexistentFromDB(currentBooks);
                     }
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<ArrayList<BookData>>() {
+                .subscribe(new Action1<ArrayList<LocalBook>>() {
                     @Override
-                    public void call(ArrayList<BookData> books) {
+                    public void call(ArrayList<LocalBook> books) {
                         if (books == null) {
                             iView._snackDeleteFailureInfo();
                         }
@@ -133,17 +180,38 @@ public class MainPresenter implements RecyclerPresenter, MyItemClickListener, My
                         mActivity.enableFab();
                     }
                 });
+
+
+//        Flowable.just(mAdapter.getDataList())
+//                .map(new Function<List<LocalBook>, ArrayList<LocalBook>>() {
+//                    @Override
+//                    public ArrayList<LocalBook> apply(List<LocalBook> currentBooks) throws Exception {
+//                        return iModel.deleteNonexistentFromDB(currentBooks);
+//                    }
+//                })
+//                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Consumer<ArrayList<LocalBook>>() {
+//                    @Override
+//                    public void accept(ArrayList<LocalBook> books) throws Exception {
+//                        if (books == null) {
+//                            iView._snackDeleteFailureInfo();
+//                        }
+//                        deleteBooks(books);
+//                        mActivity.enableFab();
+//                    }
+//                });
     }
 
-    private void deleteBooks(ArrayList<BookData> deleteBooks) {
+    private void deleteBooks(ArrayList<LocalBook> deleteBooks) {
         if (deleteBooks == null || deleteBooks.size() == 0)
             return;
-        for (BookData deleteBook : deleteBooks) {
+        for (LocalBook deleteBook : deleteBooks) {
             mAdapter.deleteItem(deleteBook);
         }
     }
 
-    public void addBooks(ArrayList<BookData> books) {
+    public void addBooks(ArrayList<LocalBook> books) {
         mAdapter.addItems(0, books);
         iView._scrollToPosition(0);
     }
@@ -162,7 +230,7 @@ public class MainPresenter implements RecyclerPresenter, MyItemClickListener, My
     }
 
     public void toImportActivity() {
-        iView._toImportActivity((ArrayList<BookData>) mAdapter.getDataList());
+        iView._toImportActivity((ArrayList<LocalBook>) mAdapter.getDataList());
     }
 
     @Override
@@ -179,14 +247,14 @@ public class MainPresenter implements RecyclerPresenter, MyItemClickListener, My
                 iView._toSectionActivity();
                 return;
             }
-            BookData bookData = mAdapter.findItemInPosition(position);
+            LocalBook localBook = mAdapter.findItemInPosition(position);
             // confirm this file exists
-            File file = new File(bookData.path);
+            File file = new File(localBook.path);
             if (!file.exists()) {
                 deleteNonExistentBooks();
                 return;
             }
-            iView._toReadActivity(bookData);
+            iView._toReadActivity(localBook);
         } else {
             reactOnPosition(position);
         }

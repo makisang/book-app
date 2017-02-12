@@ -13,18 +13,18 @@ import java.util.List;
 
 public abstract class MyBaseAdapter<T, V extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<V> {
     protected Context mContext;
-    protected List<T> dataList;
+    protected List<T> mDataList;
     protected MyItemClickListener mItemClickListener;
     protected MyItemLongClickListener mItemLongClickListener;
 
     public MyBaseAdapter(Context context, @NonNull List<T> list) {
-        this.mContext = context;
-        this.dataList = list;
+        mContext = context;
+        mDataList = list;
     }
 
     @Override
     public int getItemCount() {
-        return dataList.size();
+        return mDataList.size();
     }
 
     public void setItemClick(MyItemClickListener listener) {
@@ -36,37 +36,37 @@ public abstract class MyBaseAdapter<T, V extends RecyclerView.ViewHolder> extend
     }
 
     public List<T> getDataList() {
-        return dataList;
+        return mDataList;
     }
 
     public int findItemIndex(T data) {
-        return dataList.indexOf(data);
+        return mDataList.indexOf(data);
     }
 
     public T findItemInPosition(int position) {
-        return dataList.get(position);
+        return mDataList.get(position);
     }
 
     public void addItem(T data) {
-        dataList.add(data);
+        mDataList.add(data);
         notifyItemInserted(0);
     }
 
     public void addItem(T data, int position) {
-        dataList.add(position, data);
+        mDataList.add(position, data);
         notifyItemInserted(position);
     }
 
-    public void addItems(int position, ArrayList<T> dataList) {
-        if (this.dataList.addAll(position, dataList)) {
+    public void addItems(int position, List<T> dataList) {
+        if (mDataList.addAll(position, dataList)) {
             notifyItemRangeInserted(position, dataList.size());
         }
     }
 
     public int deleteItem(T data) {
-        int position = dataList.indexOf(data);
+        int position = mDataList.indexOf(data);
         if (position >= 0) {
-            dataList.remove(position);
+            mDataList.remove(position);
             notifyItemRemoved(position);
             return position;
         }

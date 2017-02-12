@@ -3,33 +3,40 @@ package com.raider.book.fragment;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.raider.book.R;
+import com.raider.book.activity.ReadActivity;
 import com.raider.book.adapter.JournalAdapter;
+import com.raider.book.contract.Constants;
+import com.raider.book.dao.NetBook;
+import com.raider.book.interf.MyItemClickListener;
 import com.raider.book.mvp.contract.OnlineContract;
-import com.raider.book.dao.HttpResult;
-import com.raider.book.dao.Journal;
-import com.raider.book.mvp.presenter.JournalPresenter;
+import com.raider.book.mvp.presenter.RecommendPresenter;
 import com.raider.book.widget.OffsetDecoration;
 
 import java.util.ArrayList;
 
-public class JournalFragment extends Fragment implements OnlineContract.JournalView {
+import rx.functions.Action1;
+
+public class RecommendFragment extends Fragment implements OnlineContract.RecommendView {
+
+    Activity mActivity;
     private JournalAdapter mAdapter;
-    private JournalPresenter mPresenter;
+    private RecyclerView recyclerView;
+    private RecommendPresenter mPresenter;
 
     @Override
-    public void _setPresenter(JournalPresenter presenter) {
+    public void _setPresenter(RecommendPresenter presenter) {
         this.mPresenter = presenter;
     }
 
@@ -53,24 +60,11 @@ public class JournalFragment extends Fragment implements OnlineContract.JournalV
 
     }
 
-    class MyHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-
-            HttpResult<Journal> result = (HttpResult<Journal>) msg.obj;
-            mAdapter.addItems(result.data);
-        }
+    public RecommendFragment() {
     }
 
-    Activity mActivity;
-    private RecyclerView recyclerView;
-
-    public JournalFragment() {
-    }
-
-    public static JournalFragment newInstance() {
-        return new JournalFragment();
+    public static RecommendFragment newInstance() {
+        return new RecommendFragment();
     }
 
     @Override
@@ -82,7 +76,14 @@ public class JournalFragment extends Fragment implements OnlineContract.JournalV
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mAdapter = new JournalAdapter(mActivity, new ArrayList<Journal>());
+        mAdapter = new JournalAdapter(mActivity, new ArrayList<NetBook>());
+        mAdapter.setItemClick(new MyItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                NetBook netBook = mAdapter.findItemInPosition(position);
+                ReadActivity.start(getActivity(), netBook);
+            }
+        });
     }
 
     @Override
@@ -98,11 +99,17 @@ public class JournalFragment extends Fragment implements OnlineContract.JournalV
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+    public void onActivityCreated(@Nullable final Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mPresenter.onViewCreated();
 
-        mPresenter.getJournals();
+        mPresenter.getJournals(new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                Log.d(Constants.ERROR_TAG, throwable.toString());
+                Toast.makeText(getContext(), getString(R.string.error), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override

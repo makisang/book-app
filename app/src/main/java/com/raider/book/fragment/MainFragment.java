@@ -20,7 +20,7 @@ import com.raider.book.base.BaseFragment;
 import com.raider.book.R;
 import com.raider.book.adapter.BookInShelfAdapter;
 import com.raider.book.mvp.contract.MainContract;
-import com.raider.book.dao.BookData;
+import com.raider.book.dao.LocalBook;
 import com.raider.book.activity.SDImportActivity;
 import com.raider.book.activity.ReadActivity;
 import com.raider.book.activity.SectionActivity;
@@ -54,7 +54,7 @@ public class MainFragment extends BaseFragment implements MainContract.View {
         recyclerView.setLayoutManager(new GridLayoutManager(mActivity, SPAN_COUNT));
         recyclerView.addItemDecoration(new OffsetDecoration(getResources().getDimensionPixelSize(R.dimen.spacing_mid)));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        BookInShelfAdapter adapter = new BookInShelfAdapter(mActivity, new ArrayList<BookData>());
+        BookInShelfAdapter adapter = new BookInShelfAdapter(mActivity, new ArrayList<LocalBook>());
         recyclerView.setAdapter(adapter);
         return root;
     }
@@ -82,7 +82,7 @@ public class MainFragment extends BaseFragment implements MainContract.View {
     }
 
     @Override
-    public void _toReadActivity(BookData book) {
+    public void _toReadActivity(LocalBook book) {
         ReadActivity.start(mActivity, book);
     }
 
@@ -92,7 +92,7 @@ public class MainFragment extends BaseFragment implements MainContract.View {
     }
 
     @Override
-    public void _toImportActivity(ArrayList<BookData> books) {
+    public void _toImportActivity(ArrayList<LocalBook> books) {
         SDImportActivity.start(mActivity, MainActivity.REQUEST_BOOK_IMPORT, books);
     }
 

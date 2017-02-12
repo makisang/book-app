@@ -18,7 +18,7 @@ import android.view.View;
 import com.raider.book.R;
 import com.raider.book.adapter.MyPagerAdapter;
 import com.raider.book.custom.TextFAB;
-import com.raider.book.dao.BookData;
+import com.raider.book.dao.LocalBook;
 import com.raider.book.fragment.FileFragment;
 import com.raider.book.fragment.SmartFragment;
 import com.raider.book.mvp.model.CPModel;
@@ -32,12 +32,12 @@ public class SDImportActivity extends AppCompatActivity {
     private static final int MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 213;
     public static final String EXTRA_BOOKS_IN_SHELF = "books_in_shelf";
     private TextFAB fab;
-    private SDImportPresenter mPresenter;
+    private SmartFragment smartFragment;
 
     @SuppressWarnings("unchecked")
-    public static void start(Activity activity, int requestCode, List<BookData> shelfBooks) {
+    public static void start(Activity activity, int requestCode, List<LocalBook> shelfBooks) {
         Intent intent = new Intent(activity, SDImportActivity.class);
-        ArrayList<BookData> newBooks = new ArrayList<>();
+        ArrayList<LocalBook> newBooks = new ArrayList<>();
         newBooks.addAll(shelfBooks);
         intent.putParcelableArrayListExtra(EXTRA_BOOKS_IN_SHELF, newBooks);
         activity.startActivityForResult(intent, requestCode);
@@ -76,7 +76,7 @@ public class SDImportActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mPresenter.addToShelf();
+                smartFragment.addBooks();
             }
         });
     }
@@ -90,13 +90,12 @@ public class SDImportActivity extends AppCompatActivity {
 
     @SuppressWarnings("all")
     private void initVPAndTab() {
-        ArrayList<BookData> parcelableArrayListExtra = getIntent().<BookData>getParcelableArrayListExtra(EXTRA_BOOKS_IN_SHELF);
-        SmartFragment smartFragment = SmartFragment.newInstance(getIntent().<BookData>getParcelableArrayListExtra
+        ArrayList<LocalBook> parcelableArrayListExtra = getIntent().<LocalBook>getParcelableArrayListExtra(EXTRA_BOOKS_IN_SHELF);
+        smartFragment = SmartFragment.newInstance(getIntent().<LocalBook>getParcelableArrayListExtra
                 (EXTRA_BOOKS_IN_SHELF));
         FileFragment fileFragment = FileFragment.newInstance();
 
-//        mPresenter = new SDImportPresenter(smartFragment, new SmartModel(getApplicationContext()));
-        mPresenter = new SDImportPresenter(smartFragment, new CPModel(getApplicationContext()));
+        SDImportPresenter presenter = new SDImportPresenter(smartFragment, new CPModel(getApplicationContext()));
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.view_pager);
         MyPagerAdapter pagerAdapter = new MyPagerAdapter(getSupportFragmentManager());

@@ -1,17 +1,25 @@
 <resources>
+    <!--text length-->
+    <dimen name="text_size_12">12sp</dimen>
+    <dimen name="text_size_14">14sp</dimen>
+    <dimen name="text_size_16">16sp</dimen>
+    <dimen name="text_size_20">20sp</dimen>
+    <dimen name="text_size_24">24sp</dimen>
+    <dimen name="text_size_30">30sp</dimen>
+
     <!-- margin and padding -->
     <dimen name="spacing_nano">2dp</dimen>
     <dimen name="spacing_mid">4dp</dimen>
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="large_padding">32dp</dimen>
-    <dimen name="large_margin">32dp</dimen>
-    <dimen name="common_padding">16dp</dimen>
-    <dimen name="common_margin">16dp</dimen>
     <dimen name="small_margin">10dp</dimen>
     <dimen name="small_padding">10dp</dimen>
+    <dimen name="common_padding">16dp</dimen>
+    <dimen name="common_margin">16dp</dimen>
+    <dimen name="large_padding">32dp</dimen>
+    <dimen name="large_margin">32dp</dimen>
 
-    <!-- component size -->
+    <!-- component length -->
     <dimen name="fab_size">56dp</dimen>
 
     <!-- elevation -->
@@ -21,7 +29,7 @@
     <dimen name="elevation_fab_rest">6dp</dimen>
     <dimen name="elevation_fab_pressed">12dp</dimen>
 
-    <!-- PopupWindow size -->
+    <!-- PopupWindow length -->
     <dimen name="popup_width">200dp</dimen>
     <dimen name="popup_height">300dp</dimen>
 

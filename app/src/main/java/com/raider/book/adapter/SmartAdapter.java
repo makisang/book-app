@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.raider.book.R;
-import com.raider.book.dao.BookData;
+import com.raider.book.dao.LocalBook;
 import com.raider.book.interf.MyCheckChangedListener;
 
 import java.util.ArrayList;
@@ -18,13 +18,13 @@ import java.util.ArrayList;
 /**
  * 显示所有的.txt文件
  */
-public class SmartAdapter extends MyBaseAdapter<BookData, SmartAdapter.MyViewHolder> {
-    ArrayList<BookData> shelfBooks;
+public class SmartAdapter extends MyBaseAdapter<LocalBook, SmartAdapter.MyViewHolder> {
+    ArrayList<LocalBook> shelfBooks;
     SparseIntArray sparseIntArray = new SparseIntArray();
     String IN_SHELF;
     MyCheckChangedListener ccListener;
 
-    public SmartAdapter(Context context, ArrayList<BookData> books, ArrayList<BookData> shelfBooks) {
+    public SmartAdapter(Context context, ArrayList<LocalBook> books, ArrayList<LocalBook> shelfBooks) {
         super(context, books);
         this.shelfBooks = shelfBooks;
         IN_SHELF = context.getResources().getString(R.string.already_in_shelf);
@@ -42,10 +42,10 @@ public class SmartAdapter extends MyBaseAdapter<BookData, SmartAdapter.MyViewHol
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
         final int itemPosition = holder.getAdapterPosition();
-        BookData bookData = dataList.get(itemPosition);
-        holder.name.setText(bookData.name);
+        LocalBook localBook = mDataList.get(itemPosition);
+        holder.name.setText(localBook.title);
 
-        if (shelfBooks != null && shelfBooks.contains(bookData)) {
+        if (shelfBooks != null && shelfBooks.contains(localBook)) {
             holder.status.setVisibility(View.VISIBLE);
             holder.checkBox.setVisibility(View.GONE);
             holder.status.setText(IN_SHELF);

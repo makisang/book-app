@@ -32,7 +32,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
 import com.raider.book.R;
-import com.raider.book.dao.BookData;
+import com.raider.book.dao.LocalBook;
 import com.raider.book.fragment.MainFragment;
 import com.raider.book.mvp.model.MainModel;
 import com.raider.book.mvp.presenter.MainPresenter;
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         activity.startActivity(intent);
     }
 
-    public static void back(Activity activity, ArrayList<BookData> addedBooks) {
+    public static void back(Activity activity, ArrayList<LocalBook> addedBooks) {
         Intent intent = new Intent();
         intent.putParcelableArrayListExtra(EXTRA_ADDED_BOOKS, addedBooks);
         activity.setResult(Activity.RESULT_OK, intent);
@@ -234,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_BOOK_IMPORT && resultCode == Activity.RESULT_OK && data != null) {
-            ArrayList<BookData> addedBooks = data.getParcelableArrayListExtra(EXTRA_ADDED_BOOKS);
+            ArrayList<LocalBook> addedBooks = data.getParcelableArrayListExtra(EXTRA_ADDED_BOOKS);
 
             // Show success SnackBar.
             String hint = String.format(getResources().getString(R.string.hint_add_book_success), addedBooks.size());
